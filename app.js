@@ -1,5 +1,5 @@
-var cron = require("node-cron");
-var io = require("socket.io-client");
+const cron = require("node-cron");
+const io = require("socket.io-client");
 const { config } = require("./config");
 const {
   Invoker,
@@ -11,8 +11,9 @@ const { findCallHistoryByCallId } = require("./utils/callHistoryReader");
 const { saveCallHistoryGetResult } = require("./mongodbHelpers");
 const { updateTask } = require("./tasks/taskUpdater");
 const { readFile } = require("./utils/fileFSWrapper");
+const { logger } = require("./utils/logger");
 
-var socket = io("http://localhost:4000");
+const socket = io(config.socketio_server_url);
 socket.on("connect", () => {
   console.log("connected");
 });
@@ -21,16 +22,16 @@ socket.on("disconnect", () => {
 });
 
 socket.on("newTask", async data => {
-  await updateTask(data);
+  await updateTask(data); // receiving new tasks from server
   console.log("newTask created");
 });
 
+// read local copy of tasks list (after server starts and receives new task)
 const schedule = readFile("./tasks/tasks.json").find(
   task => task.task_category === "call_status"
 )["task"];
-console.log(schedule);
 
-var task = cron.schedule(schedule, async () => {
+const task = cron.schedule(schedule, async () => {
   console.log("task is running");
   let summary_list = [];
   try {
@@ -39,9 +40,11 @@ var task = cron.schedule(schedule, async () => {
       summary_list.push(result);
     }
     const reportId = await saveCallHistoryGetResult(summary_list.flat(1));
-    console.log("reportId", reportId);
+    console.log("Task complate. ReportId", reportId);
+    // send complate task data back to server
+    socket.emit("taskComplete", { reportId });
   } catch (error) {
-    console.log(error);
+    logger.error("Error happened when testing call status: ", error);
   }
 });
 
@@ -58,8 +61,8 @@ const testCallStatus = async number => {
 
   // get call status
   const callStatus = callResponseJson.Command.DialResult[0].$.status;
+  
   if (callStatus !== "OK") {
-    TODO: "Log error message";
     console.log(callResponseJson.Command.DialResult);
   }
 

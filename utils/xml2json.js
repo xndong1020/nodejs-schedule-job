@@ -1,4 +1,4 @@
-var parseString = require("xml2js").parseString;
+const parseString = require("xml2js").parseString;
 
 exports.xml2jsonConverter = xml => {
   return new Promise((resolve, reject) => {

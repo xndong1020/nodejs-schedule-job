@@ -1,6 +1,4 @@
-const { connect } = require("../db");
 const {
-  CallHistoryGetResult,
   CallHistoryGetResultReport
 } = require("../models/CallHistoryGetResult");
 

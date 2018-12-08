@@ -40,7 +40,7 @@ exports.findCallHistoryByCallId = (callHistoryGetResponse, callId) => {
           item["Audio"][0]["Outgoing"][0]["MaxJitter"][0]
         ).toFixed(2)
       };
-    })
+    });
 
   return targetCallHistoryGetResult;
 };

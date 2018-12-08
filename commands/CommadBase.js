@@ -1,4 +1,4 @@
-var axios = require("axios");
+const axios = require("axios");
 const { payloadFactory } = require("../factories/payloadFactory");
 const { xml2jsonConverter } = require("../utils/xml2json");
 const { getBasicAuthHeader } = require("../utils/getBasicAuthHeader");
