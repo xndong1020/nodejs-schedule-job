@@ -41,10 +41,11 @@ const task = cron.schedule("0 */2 * * * *", async () => {
   let tasks = await getTasks("tasks_pending");
   tasks = JSON.parse(tasks);
 
-  if (tasks.length > 0) jobDispatcher(tasks);
+  if (tasks.length > 0) await jobDispatcher(tasks);
+  else console.log("No task(s) pending");
 });
 
-const jobDispatcher = tasks => {
+const jobDispatcher = async tasks => {
   let summary_list = [];
   const current_task = tasks[0];
   const { task_type, recipient, _id } = current_task;
