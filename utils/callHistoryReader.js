@@ -15,6 +15,7 @@ exports.findCallHistoryByCallId = (callHistoryGetResponse, callId) => {
   targetCallHistoryGetResult = callHistoryGetResultList
     .filter(item => item["CallId"][0] === callId && item["DaysAgo"][0] === "0")
     .map(item => {
+      console.log("callHistoryGetResultList", item);
       return {
         status: callHistoryGetResultStatus,
         CallHistoryId: item["CallHistoryId"][0],

@@ -7,6 +7,7 @@ const {
   DisconnectCallCommand,
   CallHistoryGetCommand
 } = require("./commands/CommadBase");
+require("./db");
 const { findCallHistoryByCallId } = require("./utils/callHistoryReader");
 const { saveCallHistoryGetResult } = require("./mongodbHelpers");
 const { updateTask } = require("./tasks/taskUpdater");
@@ -15,10 +16,10 @@ const { logger } = require("./utils/logger");
 
 const socket = io(config.socketio_server_url);
 socket.on("connect", () => {
-  console.log("connected");
+  console.log("socket connected");
 });
 socket.on("disconnect", () => {
-  console.log("disconnect");
+  console.log("socket disconnect");
 });
 
 socket.on("newTask", async data => {
@@ -27,9 +28,16 @@ socket.on("newTask", async data => {
 });
 
 // read local copy of tasks list (after server starts and receives new task)
-const schedule = readFile("./tasks/tasks.json").find(
+let schedule = "";
+
+const call_status_schedule = readFile("./tasks/tasks.json").filter(
   task => task.task_category === "call_status"
-)["task"];
+);
+
+if (call_status_schedule.length) {
+  schedule = call_status_schedule[call_status_schedule.length - 1]["task"];
+}
+console.log("call_status", schedule);
 
 const task = cron.schedule(schedule, async () => {
   console.log("task is running");
@@ -61,7 +69,7 @@ const testCallStatus = async number => {
 
   // get call status
   const callStatus = callResponseJson.Command.DialResult[0].$.status;
-  
+
   if (callStatus !== "OK") {
     console.log(callResponseJson.Command.DialResult);
   }
