@@ -44,6 +44,40 @@ class DisconnectCallCommand extends CommandBase {
   }
 }
 
+class HoldCallCommand extends CommandBase {
+  constructor(callId) {
+    super();
+    this.callId = callId;
+  }
+
+  async execute() {
+    const callResponse = await axios.post(
+      process.env.WEBEX_API_URL,
+      payloadFactory("holdCall", this.callId),
+      getBasicAuthHeader(process.env.WEBEX_API_USERNAME, process.env.WEBEX_API_PASSWORD)
+    );
+    const callResponseJson = await xml2jsonConverter(callResponse.data);
+    return callResponseJson;
+  }
+}
+
+class ResumeCallCommand extends CommandBase {
+  constructor(callId) {
+    super();
+    this.callId = callId;
+  }
+
+  async execute() {
+    const callResponse = await axios.post(
+      process.env.WEBEX_API_URL,
+      payloadFactory("resumeCall", this.callId),
+      getBasicAuthHeader(process.env.WEBEX_API_USERNAME, process.env.WEBEX_API_PASSWORD)
+    );
+    const callResponseJson = await xml2jsonConverter(callResponse.data);
+    return callResponseJson;
+  }
+}
+
 class CallHistoryGetCommand extends CommandBase {
   async execute() {
     const callResponse = await axios.post(
@@ -73,8 +107,10 @@ class Invoker {
 }
 
 module.exports = {
-  Invoker: Invoker,
-  MakeCallCommand: MakeCallCommand,
-  DisconnectCallCommand: DisconnectCallCommand,
-  CallHistoryGetCommand: CallHistoryGetCommand
+  Invoker,
+  MakeCallCommand,
+  DisconnectCallCommand,
+  CallHistoryGetCommand,
+  HoldCallCommand,
+  ResumeCallCommand
 };

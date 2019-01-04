@@ -5,8 +5,10 @@ const {
   Invoker,
   MakeCallCommand,
   DisconnectCallCommand,
-  CallHistoryGetCommand
-} = require("./commands/CommadBase");
+  CallHistoryGetCommand,
+  HoldCallCommand,
+  ResumeCallCommand
+} = require("./commands/CommandBase");
 
 require("dotenv").config();
 require("./db");
@@ -68,13 +70,15 @@ const jobDispatcher = async tasks => {
     } catch (error) {
       logger.error("Error happened when testing call status: ", error);
     }
+  } else if (task_type === "hold_resume") {
+    const testCallHoldAndResumeResult = await testCallHoldAndResume(recipient);
   }
 };
 
 const testCallStatus = async number => {
   const invoker = new Invoker();
 
-  // make call to recepient
+  // make call to recipient
   const callResponseJson = await invoker
     .set_command(new MakeCallCommand(number))
     .run_command();
@@ -106,6 +110,49 @@ const testCallStatus = async number => {
     callId
   );
   return targetCallHistoryGetResult;
+};
+
+const testCallHoldAndResume = async number => {
+  const invoker = new Invoker();
+
+  // make call to recepient
+  const callResponseJson = await invoker
+    .set_command(new MakeCallCommand(number))
+    .run_command();
+
+  // delay for a few seconds to ensure the call quality
+  await delay(20000);
+
+  // get call status
+  const callStatus = callResponseJson.Command.DialResult[0].$.status;
+
+  if (callStatus !== "OK") {
+    console.log(callResponseJson.Command.DialResult);
+  }
+
+  // get call id
+  const callId = callResponseJson.Command.DialResult[0].CallId[0];
+
+  const holdResponseJson = await invoker
+    .set_command(new HoldCallCommand(callId))
+    .run_command();
+
+  console.log(holdResponseJson);
+
+  // delay for a few seconds to ensure the call quality
+  await delay(5000);
+
+  const resumeResponseJson = await invoker
+    .set_command(new ResumeCallCommand(callId))
+    .run_command();
+
+  console.log(resumeResponseJson);
+
+  // delay for a few seconds to ensure the call quality
+  await delay(5000);
+
+  // disconnect previous call
+  await invoker.set_command(new DisconnectCallCommand(callId)).run_command();
 };
 
 const delay = ms => {

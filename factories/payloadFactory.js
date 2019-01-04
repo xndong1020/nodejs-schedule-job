@@ -13,6 +13,18 @@ const payloadFactory = (type, payload) => {
       };
       result = js2xmlparser.parse("Command", disconnectCallRequestJson);
       break;
+    case "holdCall":
+      const holdCallRequestJson = {
+        Call: { Hold: { CallId: payload, Reason: "Other" } }
+      };
+      result = js2xmlparser.parse("Command", holdCallRequestJson);
+      break;
+    case "resumeCall":
+      const resumeCallRequestJson = {
+         Call: { Resume: { CallId: payload } } 
+      };
+      result = js2xmlparser.parse("Command", resumeCallRequestJson);
+      break;
     case "callHistoryGet":
       const callHistoryGetRequestJson = {
         CallHistory: { Get: { DetailLevel: "Full" } }
