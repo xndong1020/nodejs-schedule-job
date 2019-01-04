@@ -2,7 +2,7 @@ const axios = require("axios");
 const { payloadFactory } = require("../factories/payloadFactory");
 const { xml2jsonConverter } = require("../utils/xml2json");
 const { getBasicAuthHeader } = require("../utils/getBasicAuthHeader");
-const { config } = require("../config");
+require("dotenv").config(); 
 
 class CommandBase {
   execute() {
@@ -18,9 +18,9 @@ class MakeCallCommand extends CommandBase {
 
   async execute() {
     const callResponse = await axios.post(
-      config.root_url,
+      process.env.WEBEX_API_URL,
       payloadFactory("makeCall", this.recipient_number),
-      getBasicAuthHeader(config.username, config.password)
+      getBasicAuthHeader(process.env.WEBEX_API_USERNAME, process.env.WEBEX_API_PASSWORD)
     );
     const callResponseJson = await xml2jsonConverter(callResponse.data);
     return callResponseJson;
@@ -35,9 +35,9 @@ class DisconnectCallCommand extends CommandBase {
 
   async execute() {
     const callResponse = await axios.post(
-      config.root_url,
+      process.env.WEBEX_API_URL,
       payloadFactory("disconnectCall", this.callId),
-      getBasicAuthHeader(config.username, config.password)
+      getBasicAuthHeader(process.env.WEBEX_API_USERNAME, process.env.WEBEX_API_PASSWORD)
     );
     const callResponseJson = await xml2jsonConverter(callResponse.data);
     return callResponseJson;
@@ -47,9 +47,9 @@ class DisconnectCallCommand extends CommandBase {
 class CallHistoryGetCommand extends CommandBase {
   async execute() {
     const callResponse = await axios.post(
-      config.root_url,
+      process.env.WEBEX_API_URL,
       payloadFactory("callHistoryGet", null),
-      getBasicAuthHeader(config.username, config.password)
+      getBasicAuthHeader(process.env.WEBEX_API_USERNAME, process.env.WEBEX_API_PASSWORD)
     );
     const callResponseJson = await xml2jsonConverter(callResponse.data);
     return callResponseJson;

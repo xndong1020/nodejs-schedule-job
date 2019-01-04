@@ -7,14 +7,20 @@ const {
   DisconnectCallCommand,
   CallHistoryGetCommand
 } = require("./commands/CommadBase");
+
+require("dotenv").config();
 require("./db");
+
 const { findCallHistoryByCallId } = require("./utils/callHistoryReader");
-const { saveCallHistoryGetResult } = require("./mongodbHelpers");
-const { updateTask } = require("./tasks/taskUpdater");
-const { readFile } = require("./utils/fileFSWrapper");
+const {
+  saveCallHistoryGetResult,
+  getTasksFromDbForNext24Hrs
+} = require("./services/mongodbService");
+const { setTasks, getTasks } = require("./services/redisService");
 const { logger } = require("./utils/logger");
 
-const socket = io(config.socketio_server_url);
+const socket = io(process.env.SOCKETIO_SERVER_URL);
+
 socket.on("connect", () => {
   console.log("socket connected");
 });
@@ -22,39 +28,47 @@ socket.on("disconnect", () => {
   console.log("socket disconnect");
 });
 
-socket.on("newTask", async data => {
-  await updateTask(data); // receiving new tasks from server
+socket.on("newTask", async () => {
+  const tasks = await getTasksFromDbForNext24Hrs(); // receiving new tasks from server
+  console.log(tasks);
+  await setTasks("tasks_pending", JSON.stringify(tasks));
   console.log("newTask created");
 });
 
-// read local copy of tasks list (after server starts and receives new task)
-let schedule = "";
-
-const call_status_schedule = readFile("./tasks/tasks.json").filter(
-  task => task.task_category === "call_status"
-);
-
-if (call_status_schedule.length) {
-  schedule = call_status_schedule[call_status_schedule.length - 1]["task"];
-}
-console.log("call_status", schedule);
-
-const task = cron.schedule(schedule, async () => {
+// task check every 5 mins
+const task = cron.schedule("0 */2 * * * *", async () => {
   console.log("task is running");
-  let summary_list = [];
-  try {
-    for (let index = 1; index <= config.repeat_call; index++) {
-      const result = await testCallStatus("00403362158");
-      summary_list.push(result);
-    }
-    const reportId = await saveCallHistoryGetResult(summary_list.flat(1));
-    console.log("Task complate. ReportId", reportId);
-    // send complate task data back to server
-    socket.emit("taskComplete", { reportId });
-  } catch (error) {
-    logger.error("Error happened when testing call status: ", error);
-  }
+  let tasks = await getTasks("tasks_pending");
+  tasks = JSON.parse(tasks);
+
+  if (tasks.length > 0) jobDispatcher(tasks);
 });
+
+const jobDispatcher = tasks => {
+  let summary_list = [];
+  const current_task = tasks[0];
+  const { task_type, recipient, _id } = current_task;
+  if (task_type === "call_status") {
+    try {
+      for (let index = 1; index <= config.repeat_call; index++) {
+        const result = await testCallStatus(recipient);
+        summary_list.push(result);
+      }
+      const reportId = await saveCallHistoryGetResult(summary_list.flat(1));
+
+      if (reportId) {
+        const remaining_tasks = tasks.filter(task => task._id !== _id);
+        await setTasks("tasks_completed", JSON.stringify(current_task));
+        await setTasks("tasks_pending", JSON.stringify(remaining_tasks));
+        console.log("Task completed. ReportId", reportId);
+        // send completed task data back to server
+        socket.emit("taskComplete", { reportId });
+      }
+    } catch (error) {
+      logger.error("Error happened when testing call status: ", error);
+    }
+  }
+};
 
 const testCallStatus = async number => {
   const invoker = new Invoker();

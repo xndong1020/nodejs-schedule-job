@@ -27,5 +27,5 @@ const payloadFactory = (type, payload) => {
 };
 
 module.exports = {
-  payloadFactory: payloadFactory
+  payloadFactory
 };
