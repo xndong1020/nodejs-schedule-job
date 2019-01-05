@@ -2,48 +2,57 @@ const callHoldResumeReader = response => {
   let holdResult
 
   let resumeResult
+  const { callId, holdResponseJson, resumeResponseJson } = response
 
-  const { holdResponseJson, resumeResponseJson } = response
-  const callHoldStatus =
-    holdResponseJson['Command']['CallHoldResult'][0]['$']['status']
-  const callResumeStatus =
-    resumeResponseJson['Command']['CallResumeResult'][0]['$']['status']
+  if (holdResponseJson) {
+    const callHoldStatus =
+      holdResponseJson['Command']['CallHoldResult'][0]['$']['status']
 
-  // if status is error
-  if (callHoldStatus !== 'OK') {
-    holdResult = {
-      status: callHoldStatus,
-      Cause: holdResponseJson['Command']['CallHoldResult'][0]['Cause'],
-      Description:
-        holdResponseJson['Command']['CallHoldResult'][0]['Description']
+    // if status is error
+    if (callHoldStatus !== 'OK') {
+      holdResult = {
+        status: callHoldStatus,
+        Cause: holdResponseJson['Command']['CallHoldResult'][0]['Cause'],
+        Description:
+          holdResponseJson['Command']['CallHoldResult'][0]['Description']
+      }
+    } else {
+      holdResult = {
+        status: callHoldStatus
+      }
     }
-  } else {
-    holdResult = {
-      status: callHoldStatus,
-      Cause: '',
-      Description: ''
+  }
+  if (resumeResponseJson) {
+    const callResumeStatus =
+      resumeResponseJson['Command']['CallResumeResult'][0]['$']['status']
+    // if status is error
+    if (callResumeStatus !== 'OK') {
+      resumeResult = {
+        status: callResumeStatus,
+        Cause: holdResponseJson['Command']['CallResumeResult'][0]['Cause'],
+        Description:
+          holdResponseJson['Command']['CallResumeResult'][0]['Description']
+      }
+    } else {
+      resumeResult = {
+        status: callResumeStatus
+      }
     }
   }
 
-  // if status is error
-  if (callResumeStatus !== 'OK') {
-    resumeResult = {
-      status: callResumeStatus,
-      Cause: holdResponseJson['Command']['CallResumeResult'][0]['Cause'],
-      Description:
-        holdResponseJson['Command']['CallResumeResult'][0]['Description']
+  console.log('callHoldResumeReader', holdResult, resumeResult)
+  if (holdResult && resumeResult) {
+    return {
+      callId,
+      CallHoldStatus: holdResult.status,
+      CallResumeStatus: resumeResult.status,
+      CallHoldErrorCause: holdResult.Cause || '',
+      CallHoldErrorDescription: holdResult.Description || '',
+      CallResumeErrorCause: resumeResult.Cause || '',
+      CallResumeErrorDescription: resumeResult.Description || ''
     }
   } else {
-    resumeResult = {
-      status: callResumeStatus,
-      Cause: '',
-      Description: ''
-    }
-  }
-
-  return {
-    holdResult,
-    resumeResult
+    return {}
   }
 }
 

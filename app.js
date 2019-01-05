@@ -4,21 +4,17 @@ const cron = require('node-cron')
 const io = require('socket.io-client')
 const { config } = require('./config')
 const {
-  Invoker,
-  MakeCallCommand,
-  DisconnectCallCommand,
-  CallHistoryGetCommand,
-  HoldCallCommand,
-  ResumeCallCommand
-} = require('./commands/CommandBase')
+  callStatusTester,
+  callHoldAndResumeTester
+} = require('./services/callTestingMethodsProvider')
 
 require('dotenv').config()
 require('./db')
 
-const { findCallHistoryByCallId } = require('./utils/callHistoryReader')
 const { callHoldResumeReader } = require('./utils/callHoldResumeReader')
 const {
   saveCallHistoryGetResult,
+  saveCallHoldResumeResult,
   getTasksFromDbForNext24Hrs
 } = require('./services/mongodbService')
 const { setTasks, getTasks } = require('./services/redisService')
@@ -57,7 +53,7 @@ const jobDispatcher = async tasks => {
   if (task_type === 'call_status') {
     try {
       for (let index = 1; index <= config.repeat_call; index++) {
-        const result = await testCallStatus(recipient)
+        const result = await callStatusTester(recipient)
         summary_list.push(result)
       }
       const reportId = await saveCallHistoryGetResult(summary_list.flat(1))
@@ -76,11 +72,12 @@ const jobDispatcher = async tasks => {
   } else if (task_type === 'hold_resume') {
     try {
       for (let index = 1; index <= config.repeat_call; index++) {
-        const response = await testCallHoldAndResume(recipient)
+        const response = await callHoldAndResumeTester(recipient)
         const result = callHoldResumeReader(response)
         summary_list.push(result)
       }
-      const reportId = await saveCallHistoryGetResult(summary_list.flat(1))
+      console.log('hold_resume', summary_list)
+      const reportId = await saveCallHoldResumeResult(summary_list)
 
       if (reportId) {
         const remaining_tasks = tasks.filter(task => task._id !== _id)
@@ -91,97 +88,9 @@ const jobDispatcher = async tasks => {
         socket.emit('taskComplete', { reportId })
       }
     } catch (error) {
-      logger.error('Error happened when testing call status: ', error)
+      logger.error('Error happened when testing call hold and resume: ', error)
     }
   }
-}
-
-const testCallStatus = async number => {
-  const invoker = new Invoker()
-
-  // make call to recipient
-  const callResponseJson = await invoker
-    .set_command(new MakeCallCommand(number))
-    .run_command()
-
-  // delay for a few seconds to ensure the call quality
-  await delay(config.call_wait_time)
-
-  // get call status
-  const callStatus = callResponseJson.Command.DialResult[0].$.status
-
-  if (callStatus !== 'OK') {
-    console.log(callResponseJson.Command.DialResult)
-  }
-
-  // get call id
-  const callId = callResponseJson.Command.DialResult[0].CallId[0]
-
-  // disconnect previous call
-  await invoker.set_command(new DisconnectCallCommand(callId)).run_command()
-
-  // get all call history
-  const callHistoryGetResponse = await invoker
-    .set_command(new CallHistoryGetCommand())
-    .run_command()
-
-  // find call history for previous call
-  const targetCallHistoryGetResult = findCallHistoryByCallId(
-    callHistoryGetResponse,
-    callId
-  )
-  return targetCallHistoryGetResult
-}
-
-const testCallHoldAndResume = async number => {
-  const invoker = new Invoker()
-
-  // make call to recepient
-  const callResponseJson = await invoker
-    .set_command(new MakeCallCommand(number))
-    .run_command()
-
-  // delay for a few seconds to ensure the call quality
-  await delay(20000)
-
-  // get call status
-  const callStatus = callResponseJson.Command.DialResult[0].$.status
-
-  if (callStatus !== 'OK') {
-    console.log(callResponseJson.Command.DialResult)
-  }
-
-  // get call id
-  const callId = callResponseJson.Command.DialResult[0].CallId[0]
-
-  const holdResponseJson = await invoker
-    .set_command(new HoldCallCommand(callId))
-    .run_command()
-
-  // console.log(holdResponseJson);
-
-  // delay for a few seconds to ensure the call quality
-  await delay(5000)
-
-  const resumeResponseJson = await invoker
-    .set_command(new ResumeCallCommand(callId))
-    .run_command()
-
-  // console.log(resumeResponseJson);
-
-  // delay for a few seconds to ensure the call quality
-  await delay(5000)
-
-  // disconnect previous call
-  await invoker.set_command(new DisconnectCallCommand(callId)).run_command()
-  return {
-    holdResponseJson,
-    resumeResponseJson
-  }
-}
-
-const delay = ms => {
-  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 task.start()

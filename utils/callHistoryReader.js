@@ -1,4 +1,4 @@
-exports.findCallHistoryByCallId = (callHistoryGetResponse, callId) => {
+const callHistoryReader = (callHistoryGetResponse, callId) => {
   let targetCallHistoryGetResult
   const callHistoryGetResultStatus =
     callHistoryGetResponse['Command']['CallHistoryGetResult'][0]['$']['status']
@@ -15,7 +15,6 @@ exports.findCallHistoryByCallId = (callHistoryGetResponse, callId) => {
   targetCallHistoryGetResult = callHistoryGetResultList
     .filter(item => item['CallId'][0] === callId && item['DaysAgo'][0] === '0')
     .map(item => {
-      console.log('callHistoryGetResultList', item)
       return {
         status: callHistoryGetResultStatus,
         CallHistoryId: item['CallHistoryId'][0],
@@ -45,4 +44,8 @@ exports.findCallHistoryByCallId = (callHistoryGetResponse, callId) => {
     })
 
   return targetCallHistoryGetResult
+}
+
+module.exports = {
+  callHistoryReader
 }

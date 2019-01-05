@@ -2,11 +2,22 @@
 
 const { CallHistoryGetResultReport } = require('../models/CallHistoryGetResult')
 const { Task } = require('../models/Task')
+const { CallHoldResumeResultReport } = require('../models/CallHoldResumeResult')
 const { logger } = require('../utils/logger')
 
 const saveCallHistoryGetResult = async data => {
   try {
     const result = await CallHistoryGetResultReport.create({ data })
+    return result._id
+  } catch (error) {
+    logger.error(error)
+    throw new Error(logger)
+  }
+}
+
+const saveCallHoldResumeResult = async data => {
+  try {
+    const result = await CallHoldResumeResultReport.create({ data })
     return result._id
   } catch (error) {
     logger.error(error)
@@ -32,6 +43,7 @@ const getTasksFromDbForNext24Hrs = async (task_type = '') => {
 
 module.exports = {
   saveCallHistoryGetResult,
+  saveCallHoldResumeResult,
   getTasksFromDb,
   getTasksFromDbForNext24Hrs
 }
