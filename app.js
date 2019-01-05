@@ -14,6 +14,7 @@ require("dotenv").config();
 require("./db");
 
 const { findCallHistoryByCallId } = require("./utils/callHistoryReader");
+const { callHoldResumeReader } = require("./utils/callHoldResumeReader");
 const {
   saveCallHistoryGetResult,
   getTasksFromDbForNext24Hrs
@@ -71,7 +72,25 @@ const jobDispatcher = async tasks => {
       logger.error("Error happened when testing call status: ", error);
     }
   } else if (task_type === "hold_resume") {
-    const testCallHoldAndResumeResult = await testCallHoldAndResume(recipient);
+    try {
+      for (let index = 1; index <= config.repeat_call; index++) {
+        const response = await testCallHoldAndResume(recipient);
+        const result = callHoldResumeReader(response);
+        summary_list.push(result);
+      }
+      const reportId = await saveCallHistoryGetResult(summary_list.flat(1));
+
+      if (reportId) {
+        const remaining_tasks = tasks.filter(task => task._id !== _id);
+        await setTasks("tasks_completed", JSON.stringify(current_task));
+        await setTasks("tasks_pending", JSON.stringify(remaining_tasks));
+        console.log("Task completed. ReportId", reportId);
+        // send completed task data back to server
+        socket.emit("taskComplete", { reportId });
+      }
+    } catch (error) {
+      logger.error("Error happened when testing call status: ", error);
+    }
   }
 };
 
@@ -137,7 +156,7 @@ const testCallHoldAndResume = async number => {
     .set_command(new HoldCallCommand(callId))
     .run_command();
 
-  console.log(holdResponseJson);
+  // console.log(holdResponseJson);
 
   // delay for a few seconds to ensure the call quality
   await delay(5000);
@@ -146,13 +165,17 @@ const testCallHoldAndResume = async number => {
     .set_command(new ResumeCallCommand(callId))
     .run_command();
 
-  console.log(resumeResponseJson);
+  // console.log(resumeResponseJson);
 
   // delay for a few seconds to ensure the call quality
   await delay(5000);
 
   // disconnect previous call
   await invoker.set_command(new DisconnectCallCommand(callId)).run_command();
+  return {
+    holdResponseJson,
+    resumeResponseJson
+  }
 };
 
 const delay = ms => {

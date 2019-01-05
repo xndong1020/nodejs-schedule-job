@@ -6,6 +6,7 @@ const moment = require("moment");
 const CallHistoryGetResultSchema = new mongoose.Schema({
   status: String,
   callId: String,
+  Duration: String,
   DisconnectCause: String,
   DisconnectCauseCode: String,
   DisconnectCauseOrigin: String,

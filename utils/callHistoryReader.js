@@ -20,6 +20,7 @@ exports.findCallHistoryByCallId = (callHistoryGetResponse, callId) => {
         status: callHistoryGetResultStatus,
         CallHistoryId: item["CallHistoryId"][0],
         callId: item["CallId"][0],
+        Duration: item["Duration"][0],
         DisconnectCause: item["DisconnectCause"][0],
         DisconnectCauseCode: item["DisconnectCauseCode"][0],
         DisconnectCauseOrigin: item["DisconnectCauseOrigin"][0],
