@@ -1,22 +1,19 @@
-const mongoose = require("mongoose");
+/* eslint new-cap:0 */
 
-//Define a schema
+const mongoose = require('mongoose')
+
+// Define a schema
 const TaskSchema = new mongoose.Schema({
-    text: String,
-    start_date: Date,
-    end_date: Date,
-    task_type: String,
-    recipient: String,
-    color: String
-  });
+  text: String,
+  start_date: Date,
+  end_date: Date,
+  task_type: String,
+  recipient: String,
+  color: String
+})
 
+const Task = new mongoose.model('Task', TaskSchema)
 
-  const Task = new mongoose.model(
-    "Task",
-    TaskSchema
-  );
-
-  module.exports = {
-    Task
-  };
-  
+module.exports = {
+  Task
+}

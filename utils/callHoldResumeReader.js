@@ -1,51 +1,52 @@
 const callHoldResumeReader = response => {
-  let holdResult,
-    resumeResult = undefined;
+  let holdResult
 
-  const { holdResponseJson, resumeResponseJson } = response;
+  let resumeResult
+
+  const { holdResponseJson, resumeResponseJson } = response
   const callHoldStatus =
-    holdResponseJson["Command"]["CallHoldResult"][0]["$"]["status"];
+    holdResponseJson['Command']['CallHoldResult'][0]['$']['status']
   const callResumeStatus =
-    resumeResponseJson["Command"]["CallResumeResult"][0]["$"]["status"];
+    resumeResponseJson['Command']['CallResumeResult'][0]['$']['status']
 
   // if status is error
-  if (callHoldStatus !== "OK") {
+  if (callHoldStatus !== 'OK') {
     holdResult = {
       status: callHoldStatus,
-      Cause: holdResponseJson["Command"]["CallHoldResult"][0]["Cause"],
+      Cause: holdResponseJson['Command']['CallHoldResult'][0]['Cause'],
       Description:
-        holdResponseJson["Command"]["CallHoldResult"][0]["Description"]
-    };
+        holdResponseJson['Command']['CallHoldResult'][0]['Description']
+    }
   } else {
     holdResult = {
       status: callHoldStatus,
-      Cause: "",
-      Description: ""
-    };
+      Cause: '',
+      Description: ''
+    }
   }
 
   // if status is error
-  if (callResumeStatus !== "OK") {
+  if (callResumeStatus !== 'OK') {
     resumeResult = {
       status: callResumeStatus,
-      Cause: holdResponseJson["Command"]["CallResumeResult"][0]["Cause"],
+      Cause: holdResponseJson['Command']['CallResumeResult'][0]['Cause'],
       Description:
-        holdResponseJson["Command"]["CallResumeResult"][0]["Description"]
-    };
+        holdResponseJson['Command']['CallResumeResult'][0]['Description']
+    }
   } else {
     resumeResult = {
       status: callResumeStatus,
-      Cause: "",
-      Description: ""
-    };
+      Cause: '',
+      Description: ''
+    }
   }
 
   return {
     holdResult,
     resumeResult
-  };
-};
+  }
+}
 
 module.exports = {
   callHoldResumeReader
-};
+}

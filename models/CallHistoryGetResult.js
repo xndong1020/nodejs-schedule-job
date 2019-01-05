@@ -1,8 +1,10 @@
-//Require Mongoose
-const mongoose = require("mongoose");
-const moment = require("moment");
+/* eslint new-cap:0 */
 
-//Define a schema
+// Require Mongoose
+const mongoose = require('mongoose')
+const moment = require('moment')
+
+// Define a schema
 const CallHistoryGetResultSchema = new mongoose.Schema({
   status: String,
   callId: String,
@@ -17,27 +19,27 @@ const CallHistoryGetResultSchema = new mongoose.Schema({
   VoiceOutgoingPacketLose: String,
   VoiceOutgoingPacketLosePercent: Number,
   VoiceOutgoingMaxJitter: Number
-});
+})
 
 const CallHistoryGetResultReportSchema = new mongoose.Schema({
   data: Array,
   date: {
     type: String,
-    default: moment().format("MMMM Do YYYY, h:mm:ss a")
+    default: moment().format('MMMM Do YYYY, h:mm:ss a')
   }
-});
+})
 
 const CallHistoryGetResult = new mongoose.model(
-  "CallHistoryGetResult",
+  'CallHistoryGetResult',
   CallHistoryGetResultSchema
-);
+)
 
 const CallHistoryGetResultReport = new mongoose.model(
-  "CallHistoryGetResultReport",
+  'CallHistoryGetResultReport',
   CallHistoryGetResultReportSchema
-);
+)
 
 module.exports = {
   CallHistoryGetResultReport,
   CallHistoryGetResult
-};
+}

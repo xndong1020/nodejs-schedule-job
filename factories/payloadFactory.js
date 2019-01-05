@@ -1,43 +1,43 @@
-const js2xmlparser = require("js2xmlparser");
+const js2xmlparser = require('js2xmlparser')
 
 const payloadFactory = (type, payload) => {
-  let result = {};
+  let result = {}
   switch (type) {
-    case "makeCall":
-      const makecallRequestJson = { Dial: { Number: payload } };
-      result = js2xmlparser.parse("Command", makecallRequestJson);
-      break;
-    case "disconnectCall":
+    case 'makeCall':
+      const makecallRequestJson = { Dial: { Number: payload } }
+      result = js2xmlparser.parse('Command', makecallRequestJson)
+      break
+    case 'disconnectCall':
       const disconnectCallRequestJson = {
         Call: { Disconnect: { CallId: payload } }
-      };
-      result = js2xmlparser.parse("Command", disconnectCallRequestJson);
-      break;
-    case "holdCall":
+      }
+      result = js2xmlparser.parse('Command', disconnectCallRequestJson)
+      break
+    case 'holdCall':
       const holdCallRequestJson = {
-        Call: { Hold: { CallId: payload, Reason: "Other" } }
-      };
-      result = js2xmlparser.parse("Command", holdCallRequestJson);
-      break;
-    case "resumeCall":
+        Call: { Hold: { CallId: payload, Reason: 'Other' } }
+      }
+      result = js2xmlparser.parse('Command', holdCallRequestJson)
+      break
+    case 'resumeCall':
       const resumeCallRequestJson = {
-         Call: { Resume: { CallId: payload } } 
-      };
-      result = js2xmlparser.parse("Command", resumeCallRequestJson);
-      break;
-    case "callHistoryGet":
+        Call: { Resume: { CallId: payload } }
+      }
+      result = js2xmlparser.parse('Command', resumeCallRequestJson)
+      break
+    case 'callHistoryGet':
       const callHistoryGetRequestJson = {
-        CallHistory: { Get: { DetailLevel: "Full" } }
-      };
-      result = js2xmlparser.parse("Command", callHistoryGetRequestJson);
-      break;
+        CallHistory: { Get: { DetailLevel: 'Full' } }
+      }
+      result = js2xmlparser.parse('Command', callHistoryGetRequestJson)
+      break
     default:
-      break;
+      break
   }
 
-  return result;
-};
+  return result
+}
 
 module.exports = {
   payloadFactory
-};
+}
