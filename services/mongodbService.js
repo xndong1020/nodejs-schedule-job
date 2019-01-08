@@ -36,7 +36,10 @@ const getTasksFromDbForNext24Hrs = async (task_type = '') => {
   const allTasks = await getTasksFromDb(task_type)
   const today = Date.now()
   const tasks = allTasks.filter(
-    task => task.start_date <= today && task.end_date >= today
+    task =>
+      task.start_date <= today &&
+      task.end_date >= today &&
+      task.status === 'pending'
   )
   return tasks
 }

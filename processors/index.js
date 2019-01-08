@@ -40,10 +40,16 @@ const testProcessor = async (
       await updateTaskCompletedQueue(current_task)
       await setTasks('tasks_pending', JSON.stringify(remaining_tasks))
       // send completed task data back to server
-      socket.emit('taskComplete', { reportId })
+      socket.emit('taskComplete', {
+        reportId,
+        userID,
+        taskID: _id,
+        error: null
+      })
     }
   } catch (error) {
     logger.error(`Error happened when testing ${task_type}: `, error)
+    socket.emit('taskComplete', { reportId: null, userID, taskID: _id, error })
   }
 }
 
