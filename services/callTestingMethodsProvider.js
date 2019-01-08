@@ -49,6 +49,8 @@ const callStatusTester = async number => {
 const callHoldAndResumeTester = async number => {
   const invoker = new Invoker()
 
+  await delay(5000)
+
   // make call to recipient
   const callResponseJson = await invoker
     .set_command(new MakeCallCommand(number))

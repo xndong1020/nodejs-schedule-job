@@ -60,7 +60,15 @@ const jobDispatcher = async tasks => {
 
       if (reportId) {
         const remaining_tasks = tasks.filter(task => task._id !== _id)
-        await setTasks('tasks_completed', JSON.stringify(current_task))
+        const tasks_completed_queue = await getTasks('tasks_completed')
+        const tasks_completed = tasks_completed_queue
+          ? JSON.parse(tasks_completed_queue)
+          : []
+        await setTasks(
+          'tasks_completed',
+          JSON.stringify([...tasks_completed, current_task])
+        )
+
         await setTasks('tasks_pending', JSON.stringify(remaining_tasks))
         console.log('Task completed. ReportId', reportId)
         // send completed task data back to server
@@ -81,7 +89,14 @@ const jobDispatcher = async tasks => {
 
       if (reportId) {
         const remaining_tasks = tasks.filter(task => task._id !== _id)
-        await setTasks('tasks_completed', JSON.stringify(current_task))
+        const tasks_completed_queue = await getTasks('tasks_completed')
+        const tasks_completed = tasks_completed_queue
+          ? JSON.parse(tasks_completed_queue)
+          : []
+        await setTasks(
+          'tasks_completed',
+          JSON.stringify([...tasks_completed, current_task])
+        )
         await setTasks('tasks_pending', JSON.stringify(remaining_tasks))
         console.log('Task completed. ReportId', reportId)
         // send completed task data back to server
