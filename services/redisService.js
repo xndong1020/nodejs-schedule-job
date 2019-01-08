@@ -1,8 +1,10 @@
 const redis = require('redis')
+require('dotenv').config()
+
 const client = redis.createClient({
-  port: 18511,
-  host: 'redis-18511.c10.us-east-1-3.ec2.cloud.redislabs.com',
-  password: '5BWKiyXk79HM23j5QEbrJAJsj0wopyKK'
+  port: process.env.REDIS_HOST_PORT,
+  host: process.env.REDIS_HOST_URL,
+  password: process.env.REDIS_HOST_PASSWORD
 })
 
 client.on('connect', () => {
@@ -11,6 +13,7 @@ client.on('connect', () => {
 
 const setTasks = (key, tasks) => {
   client.set(key, tasks, redis.print)
+  client.expireat(key, parseInt(+new Date() / 1000) + 86400)
 }
 
 const getTasks = key => {
@@ -22,7 +25,23 @@ const getTasks = key => {
   })
 }
 
+const setUserSettings = (userID, settings) => {
+  client.set(userID, settings, redis.print)
+  client.expireat(userID, parseInt(+new Date() / 1000) + 86400)
+}
+
+const getUserSettings = userID => {
+  return new Promise((resolve, reject) => {
+    client.get(userID, (error, result) => {
+      if (error) return reject(error)
+      return resolve(result)
+    })
+  })
+}
+
 module.exports = {
   setTasks,
-  getTasks
+  getTasks,
+  setUserSettings,
+  getUserSettings
 }

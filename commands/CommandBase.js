@@ -7,7 +7,7 @@ const { getBasicAuthHeader } = require('../utils/getBasicAuthHeader')
 require('dotenv').config()
 
 class CommandBase {
-  execute () {
+  execute (settings) {
     console.log('Parent execute method needs to be override in child class')
   }
 }
@@ -18,14 +18,12 @@ class MakeCallCommand extends CommandBase {
     this.recipient_number = recipient_number
   }
 
-  async execute () {
+  async execute (settings) {
+    const { deviceUrl, deviceUsername, devicePassword } = settings
     const callResponse = await axios.post(
-      process.env.WEBEX_API_URL,
+      deviceUrl,
       payloadFactory('makeCall', this.recipient_number),
-      getBasicAuthHeader(
-        process.env.WEBEX_API_USERNAME,
-        process.env.WEBEX_API_PASSWORD
-      )
+      getBasicAuthHeader(deviceUsername, devicePassword)
     )
     const callResponseJson = await xml2jsonConverter(callResponse.data)
     return callResponseJson
@@ -38,14 +36,12 @@ class DisconnectCallCommand extends CommandBase {
     this.callId = callId
   }
 
-  async execute () {
+  async execute (settings) {
+    const { deviceUrl, deviceUsername, devicePassword } = settings
     const callResponse = await axios.post(
-      process.env.WEBEX_API_URL,
+      deviceUrl,
       payloadFactory('disconnectCall', this.callId),
-      getBasicAuthHeader(
-        process.env.WEBEX_API_USERNAME,
-        process.env.WEBEX_API_PASSWORD
-      )
+      getBasicAuthHeader(deviceUsername, devicePassword)
     )
     const callResponseJson = await xml2jsonConverter(callResponse.data)
     return callResponseJson
@@ -58,14 +54,12 @@ class HoldCallCommand extends CommandBase {
     this.callId = callId
   }
 
-  async execute () {
+  async execute (settings) {
+    const { deviceUrl, deviceUsername, devicePassword } = settings
     const callResponse = await axios.post(
-      process.env.WEBEX_API_URL,
+      deviceUrl,
       payloadFactory('holdCall', this.callId),
-      getBasicAuthHeader(
-        process.env.WEBEX_API_USERNAME,
-        process.env.WEBEX_API_PASSWORD
-      )
+      getBasicAuthHeader(deviceUsername, devicePassword)
     )
     const callResponseJson = await xml2jsonConverter(callResponse.data)
     return callResponseJson
@@ -78,14 +72,12 @@ class ResumeCallCommand extends CommandBase {
     this.callId = callId
   }
 
-  async execute () {
+  async execute (settings) {
+    const { deviceUrl, deviceUsername, devicePassword } = settings
     const callResponse = await axios.post(
-      process.env.WEBEX_API_URL,
+      deviceUrl,
       payloadFactory('resumeCall', this.callId),
-      getBasicAuthHeader(
-        process.env.WEBEX_API_USERNAME,
-        process.env.WEBEX_API_PASSWORD
-      )
+      getBasicAuthHeader(deviceUsername, devicePassword)
     )
     const callResponseJson = await xml2jsonConverter(callResponse.data)
     return callResponseJson
@@ -93,14 +85,12 @@ class ResumeCallCommand extends CommandBase {
 }
 
 class CallHistoryGetCommand extends CommandBase {
-  async execute () {
+  async execute (settings) {
+    const { deviceUrl, deviceUsername, devicePassword } = settings
     const callResponse = await axios.post(
-      process.env.WEBEX_API_URL,
+      deviceUrl,
       payloadFactory('callHistoryGet', null),
-      getBasicAuthHeader(
-        process.env.WEBEX_API_USERNAME,
-        process.env.WEBEX_API_PASSWORD
-      )
+      getBasicAuthHeader(deviceUsername, devicePassword)
     )
     const callResponseJson = await xml2jsonConverter(callResponse.data)
     return callResponseJson
@@ -108,7 +98,8 @@ class CallHistoryGetCommand extends CommandBase {
 }
 
 class Invoker {
-  constructor () {
+  constructor (settings) {
+    this.settings = settings
     this.command = undefined
   }
 
@@ -118,7 +109,7 @@ class Invoker {
   }
 
   async run_command () {
-    const response = await this.command.execute()
+    const response = await this.command.execute(this.settings)
     return response
   }
 }

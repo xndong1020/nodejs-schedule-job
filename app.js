@@ -3,10 +3,8 @@
 const cron = require('node-cron')
 const io = require('socket.io-client')
 const { config } = require('./config')
-const {
-  callStatusTester,
-  callHoldAndResumeTester
-} = require('./services/callTestingMethodsProvider')
+const { callStatusTester, callHoldAndResumeTester } = require('./CallTesters')
+const getUserSettingsInRedis = require('./utils/getUserSettingsInRedis')
 
 require('dotenv').config()
 require('./db')
@@ -49,11 +47,16 @@ const task = cron.schedule('0 */2 * * * *', async () => {
 const jobDispatcher = async tasks => {
   let summary_list = []
   const current_task = tasks[0]
-  const { task_type, recipient, _id } = current_task
+  const { task_type, recipient, _id, userID } = current_task
+
+  // read user settings
+  if (!userID) return
+  const userDeviceSettings = await getUserSettingsInRedis(userID)
+
   if (task_type === 'call_status') {
     try {
       for (let index = 1; index <= config.repeat_call; index++) {
-        const result = await callStatusTester(recipient)
+        const result = await callStatusTester(recipient, userDeviceSettings)
         summary_list.push(result)
       }
       const reportId = await saveCallHistoryGetResult(summary_list.flat(1))
@@ -80,11 +83,13 @@ const jobDispatcher = async tasks => {
   } else if (task_type === 'hold_resume') {
     try {
       for (let index = 1; index <= config.repeat_call; index++) {
-        const response = await callHoldAndResumeTester(recipient)
+        const response = await callHoldAndResumeTester(
+          recipient,
+          userDeviceSettings
+        )
         const result = callHoldResumeReader(response)
         summary_list.push(result)
       }
-      console.log('hold_resume', summary_list)
       const reportId = await saveCallHoldResumeResult(summary_list)
 
       if (reportId) {

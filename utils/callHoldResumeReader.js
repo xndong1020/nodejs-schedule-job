@@ -40,7 +40,6 @@ const callHoldResumeReader = response => {
     }
   }
 
-  console.log('callHoldResumeReader', holdResult, resumeResult)
   if (holdResult && resumeResult) {
     return {
       callId,
