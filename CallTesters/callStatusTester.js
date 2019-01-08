@@ -4,9 +4,9 @@ const {
   DisconnectCallCommand,
   CallHistoryGetCommand
 } = require('../commands/CommandBase')
-const { callHistoryReader } = require('../utils/callHistoryReader')
+const { callHistoryReader } = require('../readers')
 const { config } = require('../config')
-const delay = require('../utils/delay')
+const { delay } = require('../utils')
 
 const callStatusTester = async (number, settings) => {
   const invoker = new Invoker(settings)

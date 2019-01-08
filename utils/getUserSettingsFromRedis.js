@@ -1,7 +1,7 @@
 const Device = require('../models/Device')
 const { setUserSettings, getUserSettings } = require('../services/redisService')
 
-const getUserSettingsInRedis = async userID => {
+const getUserSettingsFromRedis = async userID => {
   const userSettingsStr = await getUserSettings(userID)
   const userSettings = userSettingsStr ? JSON.parse(userSettingsStr) : undefined
   if (userSettings) return userSettings
@@ -11,4 +11,4 @@ const getUserSettingsInRedis = async userID => {
   return userSettingsInDb
 }
 
-module.exports = getUserSettingsInRedis
+module.exports = getUserSettingsFromRedis

@@ -5,7 +5,7 @@ const {
   HoldCallCommand,
   ResumeCallCommand
 } = require('../commands/CommandBase')
-const delay = require('../utils/delay')
+const { delay } = require('../utils')
 
 const callHoldAndResumeTester = async (number, settings) => {
   const invoker = new Invoker(settings)

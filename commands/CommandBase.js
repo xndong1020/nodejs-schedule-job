@@ -2,8 +2,8 @@
 
 const axios = require('axios')
 const { payloadFactory } = require('../factories/payloadFactory')
-const { xml2jsonConverter } = require('../utils/xml2json')
-const { getBasicAuthHeader } = require('../utils/getBasicAuthHeader')
+const { xml2jsonConverter } = require('../utils')
+const { getBasicAuthHeader } = require('../utils')
 require('dotenv').config()
 
 class CommandBase {

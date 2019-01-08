@@ -3,7 +3,7 @@
 const { CallHistoryGetResultReport } = require('../models/CallHistoryGetResult')
 const { Task } = require('../models/Task')
 const { CallHoldResumeResultReport } = require('../models/CallHoldResumeResult')
-const { logger } = require('../utils/logger')
+const { logger } = require('../utils')
 
 const saveCallHistoryGetResult = async data => {
   try {
