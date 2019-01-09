@@ -33,7 +33,7 @@ const testProcessor = async (
       else summary_list.push(result)
     }
     const targetArray = shouldFlattenArray ? summary_list.flat(1) : summary_list
-    const reportId = await reportSaverFn(targetArray)
+    const reportId = await reportSaverFn(targetArray, userID)
 
     if (reportId) {
       const remaining_tasks = tasks.filter(task => task._id !== _id)

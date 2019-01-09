@@ -5,9 +5,9 @@ const { Task } = require('../models/Task')
 const { CallHoldResumeResultReport } = require('../models/CallHoldResumeResult')
 const { logger } = require('../utils')
 
-const saveCallHistoryGetResult = async data => {
+const saveCallHistoryGetResult = async (data, userID) => {
   try {
-    const result = await CallHistoryGetResultReport.create({ data })
+    const result = await CallHistoryGetResultReport.create({ data, userID })
     return result._id
   } catch (error) {
     logger.error(error)
@@ -15,9 +15,9 @@ const saveCallHistoryGetResult = async data => {
   }
 }
 
-const saveCallHoldResumeResult = async data => {
+const saveCallHoldResumeResult = async (data, userID) => {
   try {
-    const result = await CallHoldResumeResultReport.create({ data })
+    const result = await CallHoldResumeResultReport.create({ data, userID })
     return result._id
   } catch (error) {
     logger.error(error)

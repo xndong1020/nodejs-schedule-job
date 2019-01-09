@@ -23,6 +23,7 @@ const CallHistoryGetResultSchema = new mongoose.Schema({
 
 const CallHistoryGetResultReportSchema = new mongoose.Schema({
   data: Array,
+  userID: String,
   date: {
     type: String,
     default: moment().format('MMMM Do YYYY, h:mm:ss a')
