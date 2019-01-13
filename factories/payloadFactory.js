@@ -25,6 +25,13 @@ const payloadFactory = (type, payload) => {
       }
       result = js2xmlparser.parse('Command', resumeCallRequestJson)
       break
+    case 'unattendedTransferCall':
+      const unattendedTransferCallRequestJson = {
+        Call: { UnattendedTransfer: { CallId: payload, Number: '25142' } }
+      }
+      result = js2xmlparser.parse('Command', unattendedTransferCallRequestJson)
+      break
+
     case 'callHistoryGet':
       const callHistoryGetRequestJson = {
         CallHistory: { Get: { DetailLevel: 'Full' } }
