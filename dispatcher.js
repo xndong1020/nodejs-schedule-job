@@ -1,12 +1,13 @@
 /* eslint camelcase:0 */
 
-const { callHoldResumeReader } = require('./readers')
+const { callHoldResumeReader, callUnattendedTransferReader } = require('./readers')
 const {
   saveCallHistoryGetResult,
-  saveCallHoldResumeResult
+  saveCallHoldResumeResult,
+  saveCallUnattendedTransferResult
 } = require('./services/mongodbService')
 const testProcessor = require('./processors')
-const { callStatusTester, callHoldAndResumeTester } = require('./CallTesters')
+const { callStatusTester, callHoldAndResumeTester, callUnattendedTransferTester } = require('./CallTesters')
 
 const jobDispatcher = async tasks => {
   const current_task = tasks[0]
@@ -31,6 +32,17 @@ const jobDispatcher = async tasks => {
         false
       )
       break
+
+    case 'call_UnattendedTransfere':
+      await testProcessor(
+        tasks,
+        callUnattendedTransferTester,
+        saveCallUnattendedTransferResult,
+        callUnattendedTransferReader,
+        false
+      )
+      break
+
     default:
       break
   }

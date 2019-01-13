@@ -84,6 +84,25 @@ class ResumeCallCommand extends CommandBase {
   }
 }
 
+// My code UnattendedTransfer Command
+class UnattendedTransferCommand extends CommandBase {
+  constructor (callId) {
+    super()
+    this.callId = callId
+  }
+
+  async execute (settings) {
+    const { deviceUrl, deviceUsername, devicePassword } = settings
+    const callResponse = await axios.post(
+      deviceUrl,
+      payloadFactory('unattendedTransferCall', this.callId),
+      getBasicAuthHeader(deviceUsername, devicePassword)
+    )
+    const callResponseJson = await xml2jsonConverter(callResponse.data)
+    return callResponseJson
+  }
+}
+
 class CallHistoryGetCommand extends CommandBase {
   async execute (settings) {
     const { deviceUrl, deviceUsername, devicePassword } = settings
@@ -120,5 +139,6 @@ module.exports = {
   DisconnectCallCommand,
   CallHistoryGetCommand,
   HoldCallCommand,
-  ResumeCallCommand
+  ResumeCallCommand,
+  UnattendedTransferCommand
 }
