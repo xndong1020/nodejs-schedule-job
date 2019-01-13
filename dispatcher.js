@@ -33,7 +33,7 @@ const jobDispatcher = async tasks => {
       )
       break
 
-    case 'call_UnattendedTransfere':
+    case 'call_UnattendedTransfer':
       await testProcessor(
         tasks,
         callUnattendedTransferTester,
