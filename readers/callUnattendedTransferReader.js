@@ -23,7 +23,6 @@ const callUnattendedTransferReader = response => {
     }
   }
 
-  console.log('callUnattendedTransferReader', UnattendedTransferResult)
   if (UnattendedTransferResult) {
     return {
       callId,
