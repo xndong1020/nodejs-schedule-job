@@ -6,7 +6,7 @@ const getUserSettingsFromRedis = async userID => {
   const userSettings = userSettingsStr ? JSON.parse(userSettingsStr) : undefined
   if (userSettings) return userSettings
 
-  const userSettingsInDb = await Device.findOne({ userID }, { _id: 0 })
+  const userSettingsInDb = await Device.findOne({ userID }, { _id: 0, __v: 0 })
   await setUserSettings(userID, JSON.stringify(userSettingsInDb))
   return userSettingsInDb
 }

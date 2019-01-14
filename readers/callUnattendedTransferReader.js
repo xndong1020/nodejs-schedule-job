@@ -11,7 +11,8 @@ const callUnattendedTransferReader = response => {
     if (callUnattendedTransferStatus !== 'OK') {
       UnattendedTransferResult = {
         status: callUnattendedTransferStatus,
-        Cause: unattendedTransferJson['Command']['CallUnattendedTransferResult'][0]['Cause'],
+        Cause:
+          unattendedTransferJson['Command']['CallUnattendedTransferResult'][0]['Cause'],
         Description:
           unattendedTransferJson['Command']['CallUnattendedTransferResult'][0]['Description']
       }
@@ -28,7 +29,8 @@ const callUnattendedTransferReader = response => {
       callId,
       CallUnattendedTransferStatus: UnattendedTransferResult.status,
       CallUnattendedTransferErrorCause: UnattendedTransferResult.Cause || '',
-      CallUnattendedTransferErrorDescription: UnattendedTransferResult.Description || ''
+      CallUnattendedTransferErrorDescription:
+        UnattendedTransferResult.Description || ''
     }
   } else {
     return {}
