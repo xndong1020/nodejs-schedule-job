@@ -20,6 +20,7 @@ const callHistoryReader = (callHistoryGetResponse, callId) => {
         CallHistoryId: item['CallHistoryId'][0],
         callId: item['CallId'][0],
         Duration: item['Duration'][0],
+        Protocol: item['Protocol'][0],
         DisconnectCause: item['DisconnectCause'][0],
         DisconnectCauseCode: item['DisconnectCauseCode'][0],
         DisconnectCauseOrigin: item['DisconnectCauseOrigin'][0],
@@ -39,6 +40,22 @@ const callHistoryReader = (callHistoryGetResponse, callId) => {
         ).toFixed(2),
         VoiceOutgoingMaxJitter: parseFloat(
           item['Audio'][0]['Outgoing'][0]['MaxJitter'][0]
+        ).toFixed(2),
+        VideoIncomingPacketLose:
+          item['Video'][0]['Incoming'][0]['PacketLoss'][0],
+        VideoIncomingPacketLosePercent: parseFloat(
+          item['Video'][0]['Incoming'][0]['PacketLossPercent'][0]
+        ).toFixed(2),
+        VideoIncomingMaxJitter: parseFloat(
+          item['Video'][0]['Incoming'][0]['MaxJitter'][0]
+        ).toFixed(2),
+        VideoOutgoingPacketLose:
+          item['Video'][0]['Outgoing'][0]['PacketLoss'][0],
+        VideoOutgoingPacketLosePercent: parseFloat(
+          item['Video'][0]['Outgoing'][0]['PacketLossPercent'][0]
+        ).toFixed(2),
+        VideoOutgoingMaxJitter: parseFloat(
+          item['Video'][0]['Outgoing'][0]['MaxJitter'][0]
         ).toFixed(2)
       }
     })

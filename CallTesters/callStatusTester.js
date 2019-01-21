@@ -11,6 +11,8 @@ const { delay } = require('../utils')
 const callStatusTester = async (number, settings) => {
   const invoker = new Invoker(settings)
 
+  await delay(3000)
+
   // make call to recipient
   const callResponseJson = await invoker
     .set_command(new MakeCallCommand(number))

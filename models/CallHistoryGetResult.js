@@ -9,6 +9,7 @@ const CallHistoryGetResultSchema = new mongoose.Schema({
   status: String,
   callId: String,
   Duration: String,
+  Protocol: String,
   DisconnectCause: String,
   DisconnectCauseCode: String,
   DisconnectCauseOrigin: String,
@@ -18,7 +19,13 @@ const CallHistoryGetResultSchema = new mongoose.Schema({
   VoiceIncomingMaxJitter: Number,
   VoiceOutgoingPacketLose: String,
   VoiceOutgoingPacketLosePercent: Number,
-  VoiceOutgoingMaxJitter: Number
+  VoiceOutgoingMaxJitter: Number,
+  VideoIncomingPacketLose: String,
+  VideoIncomingPacketLosePercent: Number,
+  VideoIncomingMaxJitter: Number,
+  VideoOutgoingPacketLose: String,
+  VideoOutgoingPacketLosePercent: Number,
+  VideoOutgoingMaxJitter: Number
 })
 
 const CallHistoryGetResultReportSchema = new mongoose.Schema({
