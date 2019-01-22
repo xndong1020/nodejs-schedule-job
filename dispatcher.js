@@ -15,13 +15,14 @@ const {
   callHoldAndResumeTester,
   callUnattendedTransferTester
 } = require('./CallTesters')
+const { taskType } = require('./enums')
 
 const jobDispatcher = async tasks => {
   const current_task = tasks[0]
   const { task_type } = current_task
 
   switch (task_type) {
-    case 'call_status':
+    case taskType.CALL_STATUS:
       await testProcessor(
         tasks,
         callStatusTester,
@@ -30,7 +31,7 @@ const jobDispatcher = async tasks => {
         true
       )
       break
-    case 'hold_resume':
+    case taskType.CALL_HOLD_RESUME:
       await testProcessor(
         tasks,
         callHoldAndResumeTester,
@@ -40,7 +41,7 @@ const jobDispatcher = async tasks => {
       )
       break
 
-    case 'call_UnattendedTransfer':
+    case taskType.UNATTENDED_TRANSFER:
       await testProcessor(
         tasks,
         callUnattendedTransferTester,

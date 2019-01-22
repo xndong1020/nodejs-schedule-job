@@ -1,10 +1,14 @@
 const {
   Invoker,
   MakeCallCommand,
+  CallHistoryGetCommand,
   DisconnectCallCommand,
   HoldCallCommand,
   ResumeCallCommand
 } = require('../commands/CommandBase')
+const { callHistoryReader } = require('../readers')
+const { saveCallHistoryGetResult } = require('../services/mongodbService')
+const { taskType } = require('../enums')
 const { delay } = require('../utils')
 
 const callHoldAndResumeTester = async (number, settings) => {
@@ -46,6 +50,21 @@ const callHoldAndResumeTester = async (number, settings) => {
 
   // disconnect previous call
   await invoker.set_command(new DisconnectCallCommand(callId)).run_command()
+
+  // get all call history
+  const callHistoryGetResponse = await invoker
+    .set_command(new CallHistoryGetCommand())
+    .run_command()
+
+  // find call history for previous call
+  const targetCallHistoryGetResult = callHistoryReader(
+    callHistoryGetResponse,
+    callId
+  )
+
+  // backup call history
+  await saveCallHistoryGetResult(targetCallHistoryGetResult, settings.userID, taskType.CALL_HOLD_RESUME)
+
   return {
     callId,
     holdResponseJson,
