@@ -11,14 +11,22 @@ const { saveCallHistoryGetResult } = require('../services/mongodbService')
 const { taskType } = require('../enums')
 const { delay } = require('../utils')
 
-const callHoldAndResumeTester = async (number, settings) => {
-  const invoker = new Invoker(settings)
+const callHoldAndResumeTester = async (
+  primaryDeviceSettings,
+  secondaryDeviceNo,
+  thirdDeviceNo = ''
+) => {
+  const invoker = new Invoker(
+    primaryDeviceSettings,
+    secondaryDeviceNo,
+    thirdDeviceNo
+  )
 
   await delay(5000)
 
   // make call to recipient
   const callResponseJson = await invoker
-    .set_command(new MakeCallCommand(number))
+    .set_command(new MakeCallCommand())
     .run_command()
 
   // delay for a few seconds to ensure the call quality
@@ -63,7 +71,11 @@ const callHoldAndResumeTester = async (number, settings) => {
   )
 
   // backup call history
-  await saveCallHistoryGetResult(targetCallHistoryGetResult, settings.userID, taskType.CALL_HOLD_RESUME)
+  await saveCallHistoryGetResult(
+    targetCallHistoryGetResult,
+    primaryDeviceSettings.userID,
+    taskType.CALL_HOLD_RESUME
+  )
 
   return {
     callId,

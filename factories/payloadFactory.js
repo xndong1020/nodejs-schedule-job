@@ -27,7 +27,12 @@ const payloadFactory = (type, payload) => {
       break
     case 'unattendedTransferCall':
       const unattendedTransferCallRequestJson = {
-        Call: { UnattendedTransfer: { CallId: payload, Number: '25142' } }
+        Call: {
+          UnattendedTransfer: {
+            CallId: payload.callId,
+            Number: payload.thirdDeviceNo
+          }
+        }
       }
       result = js2xmlparser.parse('Command', unattendedTransferCallRequestJson)
       break

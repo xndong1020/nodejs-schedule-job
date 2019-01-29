@@ -5,24 +5,11 @@ const DeviceSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  deviceType: {
-    type: String,
-    required: true
-  },
-  deviceUrl: {
-    type: String,
-    required: true
-  },
-  deviceUsername: {
-    type: String,
-    required: true
-  },
-  devicePassword: {
-    type: String,
-    required: true
-  }
+  devices: Array
 })
 
 const Device = mongoose.model('Device', DeviceSchema)
 
-module.exports = Device
+module.exports = {
+  Device
+}

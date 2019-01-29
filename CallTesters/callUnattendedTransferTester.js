@@ -10,16 +10,23 @@ const { saveCallHistoryGetResult } = require('../services/mongodbService')
 const { taskType } = require('../enums')
 const { delay } = require('../utils')
 
-const callUnattendedTransferTester = async (number, settings) => {
-  const invoker = new Invoker(settings)
+const callUnattendedTransferTester = async (
+  primaryDeviceSettings,
+  secondaryDeviceNo,
+  thirdDeviceNo = ''
+) => {
+  const invoker = new Invoker(
+    primaryDeviceSettings,
+    secondaryDeviceNo,
+    thirdDeviceNo
+  )
 
   await delay(5000)
 
   // make call to recipient
   const callResponseJson = await invoker
-    .set_command(new MakeCallCommand(number))
+    .set_command(new MakeCallCommand())
     .run_command()
-  console.log(callResponseJson)
 
   // delay for a few seconds to ensure the call quality
   await delay(15000)
@@ -34,7 +41,7 @@ const callUnattendedTransferTester = async (number, settings) => {
   // get call id
   const callId = callResponseJson.Command.DialResult[0].CallId[0]
 
-  // UnattendedTransfer the call to internal number 25142
+  // UnattendedTransfer the call to thirdDeviceNo
 
   const unattendedTransferJson = await invoker
     .set_command(new UnattendedTransferCommand(callId))
@@ -60,7 +67,7 @@ const callUnattendedTransferTester = async (number, settings) => {
   // backup call history
   await saveCallHistoryGetResult(
     targetCallHistoryGetResult,
-    settings.userID,
+    primaryDeviceSettings.userID,
     taskType.UNATTENDED_TRANSFER
   )
 

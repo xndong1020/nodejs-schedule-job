@@ -13,16 +13,11 @@ class CommandBase {
 }
 
 class MakeCallCommand extends CommandBase {
-  constructor (recipient_number) {
-    super()
-    this.recipient_number = recipient_number
-  }
-
-  async execute (settings) {
-    const { deviceUrl, deviceUsername, devicePassword } = settings
+  async execute (primaryDeviceSettings, secondaryDeviceNo) {
+    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
     const callResponse = await axios.post(
       deviceUrl,
-      payloadFactory('makeCall', this.recipient_number),
+      payloadFactory('makeCall', secondaryDeviceNo),
       getBasicAuthHeader(deviceUsername, devicePassword)
     )
     const callResponseJson = await xml2jsonConverter(callResponse.data)
@@ -36,8 +31,8 @@ class DisconnectCallCommand extends CommandBase {
     this.callId = callId
   }
 
-  async execute (settings) {
-    const { deviceUrl, deviceUsername, devicePassword } = settings
+  async execute (primaryDeviceSettings) {
+    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
     const callResponse = await axios.post(
       deviceUrl,
       payloadFactory('disconnectCall', this.callId),
@@ -54,8 +49,8 @@ class HoldCallCommand extends CommandBase {
     this.callId = callId
   }
 
-  async execute (settings) {
-    const { deviceUrl, deviceUsername, devicePassword } = settings
+  async execute (primaryDeviceSettings) {
+    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
     const callResponse = await axios.post(
       deviceUrl,
       payloadFactory('holdCall', this.callId),
@@ -72,8 +67,8 @@ class ResumeCallCommand extends CommandBase {
     this.callId = callId
   }
 
-  async execute (settings) {
-    const { deviceUrl, deviceUsername, devicePassword } = settings
+  async execute (primaryDeviceSettings) {
+    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
     const callResponse = await axios.post(
       deviceUrl,
       payloadFactory('resumeCall', this.callId),
@@ -91,11 +86,14 @@ class UnattendedTransferCommand extends CommandBase {
     this.callId = callId
   }
 
-  async execute (settings) {
-    const { deviceUrl, deviceUsername, devicePassword } = settings
+  async execute (primaryDeviceSettings, secondaryDeviceNo, thirdDeviceNo) {
+    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
     const callResponse = await axios.post(
       deviceUrl,
-      payloadFactory('unattendedTransferCall', this.callId),
+      payloadFactory('unattendedTransferCall', {
+        callId: this.callId,
+        thirdDeviceNo
+      }),
       getBasicAuthHeader(deviceUsername, devicePassword)
     )
     const callResponseJson = await xml2jsonConverter(callResponse.data)
@@ -104,8 +102,8 @@ class UnattendedTransferCommand extends CommandBase {
 }
 
 class CallHistoryGetCommand extends CommandBase {
-  async execute (settings) {
-    const { deviceUrl, deviceUsername, devicePassword } = settings
+  async execute (primaryDeviceSettings) {
+    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
     const callResponse = await axios.post(
       deviceUrl,
       payloadFactory('callHistoryGet', null),
@@ -117,8 +115,10 @@ class CallHistoryGetCommand extends CommandBase {
 }
 
 class Invoker {
-  constructor (settings) {
-    this.settings = settings
+  constructor (primaryDeviceSettings, secondaryDeviceNo, thirdDeviceNo) {
+    this.primaryDeviceSettings = primaryDeviceSettings
+    this.secondaryDeviceNo = secondaryDeviceNo
+    this.thirdDeviceNo = thirdDeviceNo
     this.command = undefined
   }
 
@@ -128,7 +128,11 @@ class Invoker {
   }
 
   async run_command () {
-    const response = await this.command.execute(this.settings)
+    const response = await this.command.execute(
+      this.primaryDeviceSettings,
+      this.secondaryDeviceNo,
+      this.thirdDeviceNo
+    )
     return response
   }
 }

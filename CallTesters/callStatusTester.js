@@ -8,14 +8,22 @@ const { callHistoryReader } = require('../readers')
 const { config } = require('../config')
 const { delay } = require('../utils')
 
-const callStatusTester = async (number, settings) => {
-  const invoker = new Invoker(settings)
+const callStatusTester = async (
+  primaryDeviceSettings,
+  secondaryDeviceNo,
+  thirdDeviceNo = ''
+) => {
+  const invoker = new Invoker(
+    primaryDeviceSettings,
+    secondaryDeviceNo,
+    thirdDeviceNo
+  )
 
   await delay(3000)
 
   // make call to recipient
   const callResponseJson = await invoker
-    .set_command(new MakeCallCommand(number))
+    .set_command(new MakeCallCommand())
     .run_command()
 
   // delay for a few seconds to ensure the call quality

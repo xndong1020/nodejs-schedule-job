@@ -3,6 +3,7 @@
 const updateTaskCompletedQueue = require('../utils/updateTaskCompletedQueue')
 const { logger } = require('../utils')
 const { config } = require('../config')
+const { deviceRoles } = require('../enums')
 const { setTasks } = require('../services/redisService')
 const { getUserSettingsFromRedis } = require('../utils')
 
@@ -20,15 +21,42 @@ const testProcessor = async (
 ) => {
   let summary_list = []
   const current_task = tasks[0]
-  const { recipient, task_type, _id, userID } = current_task
+  const {
+    task_type,
+    _id,
+    userID,
+    secondary_device,
+    third_device
+  } = current_task
+  const deviceRolesValues = Object.keys(deviceRoles).map(key => {
+    return deviceRoles[key]
+  })
 
   // read user settings
   if (!userID) return
   const userDeviceSettings = await getUserSettingsFromRedis(userID)
+  const { devices } = userDeviceSettings
+  const primaryDeviceFromDb = devices.find(device => device.role === 'primary')
+  const primaryDeviceSettings = { ...primaryDeviceFromDb, userID }
+  const secondaryDeviceSettings = devices.find(
+    device => device.role === 'secondary'
+  )
+  const thirdDeviceSettings = devices.find(device => device.role === 'third')
+
+  const secondaryDeviceNo = deviceRolesValues.includes(secondary_device)
+    ? secondaryDeviceSettings.deviceExtNo
+    : secondary_device
+  const thirdDeviceNo = deviceRolesValues.includes(third_device)
+    ? thirdDeviceSettings.deviceExtNo
+    : third_device
 
   try {
     for (let index = 1; index <= config.repeat_call; index++) {
-      const result = await testerFn(recipient, userDeviceSettings)
+      const result = await testerFn(
+        primaryDeviceSettings,
+        secondaryDeviceNo,
+        thirdDeviceNo
+      )
       if (readerFn) summary_list.push(readerFn(result))
       else summary_list.push(result)
     }
