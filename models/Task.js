@@ -3,18 +3,26 @@
 const mongoose = require('mongoose')
 
 // Define a schema
-const TaskSchema = new mongoose.Schema({
-  userID: String,
-  text: String,
-  start_date: Date,
-  end_date: Date,
-  task_type: String,
-  recipient: String,
-  color: String,
-  status: String,
-  reportId: String,
-  completion_date: Array
-})
+const TaskSchema = new mongoose.Schema(
+  {
+    userID: String,
+    text: String,
+    start_date: String,
+    end_date: String,
+    run_at: String,
+    task_type: String,
+    primary_device: String,
+    secondary_device: String,
+    third_device: String,
+    fourth_device: String,
+    status: String,
+    reportId: String,
+    completion_date: Array
+  },
+  {
+    timestamps: true
+  }
+)
 
 const Task = new mongoose.model('Task', TaskSchema)
 

@@ -4,6 +4,7 @@ const axios = require('axios')
 const { payloadFactory } = require('../factories/payloadFactory')
 const { xml2jsonConverter } = require('../utils')
 const { getBasicAuthHeader } = require('../utils')
+const { logger } = require('../utils')
 require('dotenv').config()
 
 class CommandBase {
@@ -13,15 +14,29 @@ class CommandBase {
 }
 
 class MakeCallCommand extends CommandBase {
-  async execute (primaryDeviceSettings, secondaryDeviceNo) {
-    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
-    const callResponse = await axios.post(
-      deviceUrl,
-      payloadFactory('makeCall', secondaryDeviceNo),
-      getBasicAuthHeader(deviceUsername, devicePassword)
-    )
-    const callResponseJson = await xml2jsonConverter(callResponse.data)
-    return callResponseJson
+  async execute (primaryDeviceSettings, secondaryDeviceDetails) {
+    try {
+      const {
+        deviceUrl,
+        deviceUsername,
+        devicePassword
+      } = primaryDeviceSettings
+      // if secondary is controlled, use its deviceExtNo, otherwise use its deviceNumber or deviceAddr
+      const secondaryDeviceNo =
+        secondaryDeviceDetails.isDeviceApiControlled === 'controlled'
+          ? secondaryDeviceDetails.deviceExtNo
+          : secondaryDeviceDetails.deviceNumberAddr
+      const callResponse = await axios.post(
+        deviceUrl,
+        payloadFactory('makeCall', secondaryDeviceNo),
+        getBasicAuthHeader(deviceUsername, devicePassword)
+      )
+      const callResponseJson = await xml2jsonConverter(callResponse.data)
+      return callResponseJson
+    } catch (err) {
+      logger.error('MakeCallCommand', err)
+      console.log(err)
+    }
   }
 }
 
@@ -86,18 +101,35 @@ class UnattendedTransferCommand extends CommandBase {
     this.callId = callId
   }
 
-  async execute (primaryDeviceSettings, secondaryDeviceNo, thirdDeviceNo) {
-    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
-    const callResponse = await axios.post(
-      deviceUrl,
-      payloadFactory('unattendedTransferCall', {
-        callId: this.callId,
-        thirdDeviceNo
-      }),
-      getBasicAuthHeader(deviceUsername, devicePassword)
-    )
-    const callResponseJson = await xml2jsonConverter(callResponse.data)
-    return callResponseJson
+  async execute (
+    primaryDeviceSettings,
+    secondaryDeviceDetails,
+    thirdDeviceDetails
+  ) {
+    try {
+      const {
+        deviceUrl,
+        deviceUsername,
+        devicePassword
+      } = primaryDeviceSettings
+      const thirdDeviceNo =
+        thirdDeviceDetails.isDeviceApiControlled === 'controlled'
+          ? thirdDeviceDetails.deviceExtNo
+          : thirdDeviceDetails.deviceNumberAddr
+      const callResponse = await axios.post(
+        deviceUrl,
+        payloadFactory('unattendedTransferCall', {
+          callId: this.callId,
+          thirdDeviceNo
+        }),
+        getBasicAuthHeader(deviceUsername, devicePassword)
+      )
+      const callResponseJson = await xml2jsonConverter(callResponse.data)
+      return callResponseJson
+    } catch (err) {
+      logger.error('UnattendedTransferCommand', err)
+      console.log(err)
+    }
   }
 }
 
@@ -115,10 +147,16 @@ class CallHistoryGetCommand extends CommandBase {
 }
 
 class Invoker {
-  constructor (primaryDeviceSettings, secondaryDeviceNo, thirdDeviceNo) {
-    this.primaryDeviceSettings = primaryDeviceSettings
-    this.secondaryDeviceNo = secondaryDeviceNo
-    this.thirdDeviceNo = thirdDeviceNo
+  constructor (
+    primaryDeviceDetails,
+    secondaryDeviceDetails,
+    thirdDeviceDetails,
+    fourthDeviceDetails
+  ) {
+    this.primaryDeviceDetails = primaryDeviceDetails
+    this.secondaryDeviceDetails = secondaryDeviceDetails
+    this.thirdDeviceDetails = thirdDeviceDetails
+    this.fourthDeviceDetails = fourthDeviceDetails
     this.command = undefined
   }
 
@@ -129,9 +167,10 @@ class Invoker {
 
   async run_command () {
     const response = await this.command.execute(
-      this.primaryDeviceSettings,
-      this.secondaryDeviceNo,
-      this.thirdDeviceNo
+      this.primaryDeviceDetails,
+      this.secondaryDeviceDetails,
+      this.thirdDeviceDetails,
+      this.fourthDeviceDetails
     )
     return response
   }

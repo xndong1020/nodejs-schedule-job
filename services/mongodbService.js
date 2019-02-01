@@ -109,22 +109,79 @@ const saveCallUnattendedTransferResult = async (data, userID) => {
   }
 }
 
-const getTasksFromDb = async (task_type = '') => {
+const getPendingTasksFromDb = async (task_type = '') => {
   let results = []
-  if (!task_type) results = await Task.find({})
-  else results = await Task.find({ task_type })
+  if (!task_type) results = await Task.find({ status: 'pending' })
+  else results = await Task.find({ task_type, status: 'pending' })
   return results
 }
 
 const getTasksFromDbForNext24Hrs = async (task_type = '') => {
-  const allTasks = await getTasksFromDb(task_type)
-  const today = Date.now()
-  const tasks = allTasks.filter(
-    task =>
-      task.start_date <= today &&
-      task.end_date >= today &&
-      task.status === 'pending'
-  )
+  const allTasks = await getPendingTasksFromDb(task_type)
+  const today = new Date()
+
+  const tasks = allTasks.filter(task => {
+    const aest_start_date = new Date(task.start_date).toLocaleString('en-US', {
+      timeZone: 'Australia/Sydney'
+    })
+    const start_date = new Date(aest_start_date)
+    const aest_end_date = new Date(task.end_date).toLocaleString('en-US', {
+      timeZone: 'Australia/Sydney'
+    })
+    const end_date = new Date(aest_end_date)
+    if (start_date < today && end_date > today) {
+      // const timeZoneOffset = today.getTimezoneOffset() / 60   // timezone offset between utc and aest us -11 hours
+
+      const timeStr =
+        today.getFullYear() +
+        '-' +
+        (today.getMonth() + 1) +
+        '-' +
+        today.getDate() +
+        '-' +
+        task.run_at
+      console.log('timeStr', timeStr)
+      const aest_run_at = new Date(timeStr).toLocaleString('en-US', {
+        timeZone: 'Australia/Sydney'
+      })
+      console.log('aest_run_at', aest_run_at)
+    }
+    return start_date < today && end_date > today
+  })
+
+  return tasks
+}
+
+const getScheduledTask = async (task_type = '') => {
+  const allTasks = await getPendingTasksFromDb(task_type)
+  const today = new Date()
+
+  const tasks = allTasks.filter(task => {
+    const aest_start_date = new Date(task.start_date).toLocaleString('en-US', {
+      timeZone: 'Australia/Sydney'
+    })
+    const start_date = new Date(aest_start_date)
+    const aest_end_date = new Date(task.end_date).toLocaleString('en-US', {
+      timeZone: 'Australia/Sydney'
+    })
+    const end_date = new Date(aest_end_date)
+    if (start_date < today && end_date > today) {
+      const timeZoneOffset = today.getTimezoneOffset() / 60
+      console.log('timeZoneOffset', timeZoneOffset)
+      const aest_run_at = new Date(
+        today.getFullYear +
+          '-' +
+          today.getMonth() +
+          '-' +
+          today.getDate() +
+          task.run_at
+      ).toLocaleString('en-US', {
+        timeZone: 'Australia/Sydney'
+      })
+      console.log(aest_run_at)
+    }
+  })
+
   return tasks
 }
 
@@ -132,6 +189,7 @@ module.exports = {
   saveCallHistoryGetResult,
   saveCallHoldResumeResult,
   saveCallUnattendedTransferResult,
-  getTasksFromDb,
-  getTasksFromDbForNext24Hrs
+  getPendingTasksFromDb,
+  getTasksFromDbForNext24Hrs,
+  getScheduledTask
 }

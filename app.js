@@ -19,10 +19,24 @@ socket.on('disconnect', () => {
 })
 
 socket.on('newTask', async () => {
+  console.log('newTask created')
   const tasks = await getTasksFromDbForNext24Hrs() // receiving new tasks from server
   console.log(tasks)
   await setTasks('tasks_pending', JSON.stringify(tasks))
-  console.log('newTask created')
+})
+
+socket.on('taskUpdated', async () => {
+  console.log('Task taskUpdated')
+  const tasks = await getTasksFromDbForNext24Hrs() // receiving new tasks from server
+  console.log(tasks)
+  await setTasks('tasks_pending', JSON.stringify(tasks))
+})
+
+socket.on('taskDeleted', async () => {
+  console.log('Task taskDeleted')
+  const tasks = await getTasksFromDbForNext24Hrs() // receiving new tasks from server
+  console.log(tasks)
+  await setTasks('tasks_pending', JSON.stringify(tasks))
 })
 
 // task check every 5 mins

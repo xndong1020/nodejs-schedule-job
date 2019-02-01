@@ -3,7 +3,6 @@
 const updateTaskCompletedQueue = require('../utils/updateTaskCompletedQueue')
 const { logger } = require('../utils')
 const { config } = require('../config')
-const { deviceRoles } = require('../enums')
 const { setTasks } = require('../services/redisService')
 const { getUserSettingsFromRedis } = require('../utils')
 
@@ -25,37 +24,37 @@ const testProcessor = async (
     task_type,
     _id,
     userID,
+    primary_device,
     secondary_device,
-    third_device
+    third_device,
+    fourth_device
   } = current_task
-  const deviceRolesValues = Object.keys(deviceRoles).map(key => {
-    return deviceRoles[key]
-  })
 
   // read user settings
   if (!userID) return
   const userDeviceSettings = await getUserSettingsFromRedis(userID)
   const { devices } = userDeviceSettings
-  const primaryDeviceFromDb = devices.find(device => device.role === 'primary')
-  const primaryDeviceSettings = { ...primaryDeviceFromDb, userID }
-  const secondaryDeviceSettings = devices.find(
-    device => device.role === 'secondary'
-  )
-  const thirdDeviceSettings = devices.find(device => device.role === 'third')
 
-  const secondaryDeviceNo = deviceRolesValues.includes(secondary_device)
-    ? secondaryDeviceSettings.deviceExtNo
-    : secondary_device
-  const thirdDeviceNo = deviceRolesValues.includes(third_device)
-    ? thirdDeviceSettings.deviceExtNo
-    : third_device
+  const primaryDeviceDetails = devices.find(
+    device => device.deviceName === primary_device
+  )
+  const secondaryDeviceDetails = devices.find(
+    device => device.deviceName === secondary_device
+  )
+  const thirdDeviceDetails = devices.find(
+    device => device.deviceName === third_device
+  )
+  const fourthDeviceDetails = devices.find(
+    device => device.deviceName === fourth_device
+  )
 
   try {
     for (let index = 1; index <= config.repeat_call; index++) {
       const result = await testerFn(
-        primaryDeviceSettings,
-        secondaryDeviceNo,
-        thirdDeviceNo
+        primaryDeviceDetails,
+        secondaryDeviceDetails,
+        thirdDeviceDetails,
+        fourthDeviceDetails
       )
       if (readerFn) summary_list.push(readerFn(result))
       else summary_list.push(result)
