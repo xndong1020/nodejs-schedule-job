@@ -28,7 +28,7 @@
     "dotenv": "^6.2.0",
     "express": "^4.16.4",
     "js2xmlparser": "^3.0.0",
-    "moment": "^2.22.2",
+    "luxon": "^1.11.1",
     "mongoose": "^5.3.15",
     "node-cron": "^2.0.3",
     "redis": "^2.8.0",

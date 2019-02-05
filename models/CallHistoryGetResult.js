@@ -2,7 +2,7 @@
 
 // Require Mongoose
 const mongoose = require('mongoose')
-const moment = require('moment')
+const { DateTime } = require('luxon')
 
 // Define a schema
 const CallHistoryGetResultSchema = new mongoose.Schema({
@@ -35,7 +35,7 @@ const CallHistoryGetResultReportSchema = new mongoose.Schema({
   associatedReportId: String,
   date: {
     type: String,
-    default: moment().format('MMMM Do YYYY, h:mm:ss a')
+    default: DateTime.local().toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)
   }
 })
 

@@ -1,7 +1,7 @@
 /* eslint new-cap:0 */
 
 const mongoose = require('mongoose')
-const moment = require('moment')
+const { DateTime } = require('luxon')
 
 // Define a schema
 const CallUnattendedTransferResultSchema = new mongoose.Schema({
@@ -16,7 +16,7 @@ const CallUnattendedTransferResultReportSchema = new mongoose.Schema({
   userID: String,
   date: {
     type: String,
-    default: moment().format('MMMM Do YYYY, h:mm:ss a')
+    default: DateTime.local().toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)
   }
 })
 
