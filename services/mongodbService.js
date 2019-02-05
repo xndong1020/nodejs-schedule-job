@@ -1,5 +1,6 @@
 /* eslint camelcase:0 */
 
+const { DateTime } = require('luxon')
 const { CallHistoryGetResultReport } = require('../models/CallHistoryGetResult')
 const { Task } = require('../models/Task')
 const { CallHoldResumeResultReport } = require('../models/CallHoldResumeResult')
@@ -116,73 +117,19 @@ const getPendingTasksFromDb = async (task_type = '') => {
   return results
 }
 
-const getTasksFromDbForNext24Hrs = async (task_type = '') => {
+const getTodayScheduledTask = async (task_type = '') => {
   const allTasks = await getPendingTasksFromDb(task_type)
-  const today = new Date()
 
-  const tasks = allTasks.filter(task => {
-    const aest_start_date = new Date(task.start_date).toLocaleString('en-US', {
-      timeZone: 'Australia/Sydney'
-    })
-    const start_date = new Date(aest_start_date)
-    const aest_end_date = new Date(task.end_date).toLocaleString('en-US', {
-      timeZone: 'Australia/Sydney'
-    })
-    const end_date = new Date(aest_end_date)
-    if (start_date < today && end_date > today) {
-      // const timeZoneOffset = today.getTimezoneOffset() / 60   // timezone offset between utc and aest us -11 hours
+  const today = DateTime.local()
 
-      const timeStr =
-        today.getFullYear() +
-        '-' +
-        (today.getMonth() + 1) +
-        '-' +
-        today.getDate() +
-        '-' +
-        task.run_at
-      console.log('timeStr', timeStr)
-      const aest_run_at = new Date(timeStr).toLocaleString('en-US', {
-        timeZone: 'Australia/Sydney'
-      })
-      console.log('aest_run_at', aest_run_at)
-    }
-    return start_date < today && end_date > today
+  const todaysTask = allTasks.filter(task => {
+    const { start_date, end_date } = task
+    const state_date_obj = DateTime.fromFormat(start_date, 'MMMM d, yyyy')
+    const end_date_obj = DateTime.fromFormat(end_date, 'MMMM d, yyyy')
+    return end_date_obj > today && state_date_obj < today
   })
 
-  return tasks
-}
-
-const getScheduledTask = async (task_type = '') => {
-  const allTasks = await getPendingTasksFromDb(task_type)
-  const today = new Date()
-
-  const tasks = allTasks.filter(task => {
-    const aest_start_date = new Date(task.start_date).toLocaleString('en-US', {
-      timeZone: 'Australia/Sydney'
-    })
-    const start_date = new Date(aest_start_date)
-    const aest_end_date = new Date(task.end_date).toLocaleString('en-US', {
-      timeZone: 'Australia/Sydney'
-    })
-    const end_date = new Date(aest_end_date)
-    if (start_date < today && end_date > today) {
-      const timeZoneOffset = today.getTimezoneOffset() / 60
-      console.log('timeZoneOffset', timeZoneOffset)
-      const aest_run_at = new Date(
-        today.getFullYear +
-          '-' +
-          today.getMonth() +
-          '-' +
-          today.getDate() +
-          task.run_at
-      ).toLocaleString('en-US', {
-        timeZone: 'Australia/Sydney'
-      })
-      console.log(aest_run_at)
-    }
-  })
-
-  return tasks
+  return todaysTask
 }
 
 module.exports = {
@@ -190,6 +137,5 @@ module.exports = {
   saveCallHoldResumeResult,
   saveCallUnattendedTransferResult,
   getPendingTasksFromDb,
-  getTasksFromDbForNext24Hrs,
-  getScheduledTask
+  getTodayScheduledTask
 }
