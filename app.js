@@ -58,13 +58,14 @@ const task = cron.schedule('0 * * * * *', async () => {
     console.log('zoneName', zoneName)
     console.log('now', now)
 
-    const taskScheduledTime = DateTime.local(
-      parseInt(now.year),
-      parseInt(now.month),
-      parseInt(now.day),
-      parseInt(bits[0]),
-      parseInt(bits[1])
-    ).setZone('Australia/Sydney')
+    const taskScheduledTime = DateTime.fromObject({
+      year: parseInt(now.year),
+      month: parseInt(now.month),
+      day: parseInt(now.day),
+      hour: parseInt(bits[0]),
+      minute: parseInt(bits[1]),
+      zone: 'Australia/Sydney'
+    })
 
     console.log('taskScheduledTime', taskScheduledTime)
     console.log(now.diff(taskScheduledTime, 'minutes').toObject())
