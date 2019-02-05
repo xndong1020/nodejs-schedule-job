@@ -42,7 +42,7 @@ socket.on('taskDeleted', async () => {
 })
 
 // task check every 2 mins
-const task = cron.schedule('0 */2 * * * *', async () => {
+const task = cron.schedule('0 * * * * *', async () => {
   // const tasks = await getCurrentJobs()
   // console.log('getCurrentJobs', tasks)
 
@@ -63,9 +63,9 @@ const task = cron.schedule('0 */2 * * * *', async () => {
     )
 
     console.log('check time', taskScheduledTime.toISO(), now.toISO())
-    console.log(now.diff(taskScheduledTime, 'minutes').toObject())
+    console.log(now.setZone('Australia/Sydney').diff(taskScheduledTime, 'minutes').toObject())
     // if scheduled time has passed
-    if (now >= taskScheduledTime) {
+    if (now.setZone('Australia/Sydney') >= taskScheduledTime) {
       return task
     }
   })
