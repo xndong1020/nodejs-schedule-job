@@ -54,7 +54,7 @@ const task = cron.schedule('0 * * * * *', async () => {
     const bits = run_at.split(':') // split 16:30 into ['16','30']
     const now = DateTime.fromObject({ zone: 'Australia/Sydney' })
 
-    const zoneName = DateTime.local().zoneName
+    const zoneName = now.zoneName
     console.log('zoneName', zoneName)
     console.log('now', now)
 
@@ -64,9 +64,9 @@ const task = cron.schedule('0 * * * * *', async () => {
       parseInt(DateTime.local().day),
       parseInt(bits[0]),
       parseInt(bits[1])
-    )
+    ).setZone('Australia/Sydney')
 
-    console.log('check time', taskScheduledTime.toISO(), now.toISO())
+    console.log('taskScheduledTime', taskScheduledTime)
     console.log(now.diff(taskScheduledTime, 'minutes').toObject())
     // if scheduled time has passed
     if (now >= taskScheduledTime) {
