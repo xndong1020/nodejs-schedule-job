@@ -43,6 +43,7 @@ socket.on('taskDeleted', async () => {
 // task check every 2 mins
 const task = cron.schedule('0 */2 * * * *', async () => {
   const tasks = await getCurrentJobs()
+  console.log('getCurrentJobs', tasks)
 
   if (tasks && tasks.length > 0) {
     // await jobDispatcher(tasks)
