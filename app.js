@@ -59,9 +59,9 @@ const task = cron.schedule('0 * * * * *', async () => {
     console.log('now', now)
 
     const taskScheduledTime = DateTime.local(
-      parseInt(DateTime.local().year),
-      parseInt(DateTime.local().month),
-      parseInt(DateTime.local().day),
+      parseInt(now.year),
+      parseInt(now.month),
+      parseInt(now.day),
       parseInt(bits[0]),
       parseInt(bits[1])
     ).setZone('Australia/Sydney')
