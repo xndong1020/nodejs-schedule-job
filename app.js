@@ -72,7 +72,7 @@ const task = cron.schedule('0 */2 * * * *', async () => {
 
   console.log('currentJobs', currentJobs)
 
-  if (tasks && tasks.length > 0) {
+  if (currentJobs && currentJobs.length > 0) {
     // await jobDispatcher(tasks)
     console.log(jobDispatcher)
     console.log('has job')
