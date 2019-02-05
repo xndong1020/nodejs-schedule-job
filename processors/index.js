@@ -61,11 +61,10 @@ const testProcessor = async (
     }
     const targetArray = shouldFlattenArray ? summary_list.flat(1) : summary_list
     const reportId = await reportSaverFn(targetArray, userID)
+    await setTasks('task_processing', JSON.stringify([])) // clear task_processing queue
+    await updateTaskCompletedQueue(current_task) // update task_complete queue
 
     if (reportId) {
-      const remaining_tasks = tasks.filter(task => task._id !== _id)
-      await updateTaskCompletedQueue(current_task)
-      await setTasks('tasks_pending', JSON.stringify(remaining_tasks))
       // send completed task data back to server
       socket.emit('taskComplete', {
         reportId,
