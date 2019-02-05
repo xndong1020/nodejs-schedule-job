@@ -52,7 +52,7 @@ const task = cron.schedule('0 */2 * * * *', async () => {
   const currentJobs = tasks.filter(task => {
     const { run_at } = task
     const bits = run_at.split(':') // split 16:30 into ['16','30']
-    const now = DateTime.local()
+    const now = DateTime.local().setZone('Australia/Sydney')
 
     const taskScheduledTime = DateTime.local(
       parseInt(now.year),
