@@ -46,9 +46,7 @@ const task = cron.schedule('0 * * * * *', async () => {
   console.log('getCurrentJobs', tasks)
 
   if (tasks && tasks.length > 0) {
-    // await jobDispatcher(tasks)
-    console.log(jobDispatcher)
-    console.log('has job')
+    await jobDispatcher(tasks)
   } else {
     console.log('No task(s) pending')
   }
