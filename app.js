@@ -3,9 +3,10 @@
 const cron = require('node-cron')
 const io = require('socket.io-client')
 const { getTodayScheduledTask } = require('./services/mongodbService')
-const { setTasks } = require('./services/redisService')
-const { getCurrentJobs } = require('./manager/taskManager')
+const { setTasks, getTasks } = require('./services/redisService')
+// const { getCurrentJobs } = require('./manager/taskManager')
 const jobDispatcher = require('./dispatcher')
+const { DateTime } = require('luxon')
 
 const socket = io(process.env.SOCKETIO_SERVER_URL)
 
@@ -42,8 +43,34 @@ socket.on('taskDeleted', async () => {
 
 // task check every 2 mins
 const task = cron.schedule('0 */2 * * * *', async () => {
-  const tasks = await getCurrentJobs()
-  console.log('getCurrentJobs', tasks)
+  // const tasks = await getCurrentJobs()
+  // console.log('getCurrentJobs', tasks)
+
+  let tasks = await getTasks('tasks_pending')
+  tasks = JSON.parse(tasks)
+
+  const currentJobs = tasks.filter(task => {
+    const { run_at } = task
+    const bits = run_at.split(':') // split 16:30 into ['16','30']
+    const now = DateTime.local()
+
+    const taskScheduledTime = DateTime.local(
+      parseInt(now.year),
+      parseInt(now.month),
+      parseInt(now.day),
+      parseInt(bits[0]),
+      parseInt(bits[1])
+    )
+
+    console.log('check time', taskScheduledTime.toISO(), now.toISO())
+    console.log(now.diff(taskScheduledTime, 'minutes').toObject())
+    // if scheduled time has passed
+    if (now >= taskScheduledTime) {
+      return task
+    }
+  })
+
+  console.log('currentJobs', currentJobs)
 
   if (tasks && tasks.length > 0) {
     // await jobDispatcher(tasks)
