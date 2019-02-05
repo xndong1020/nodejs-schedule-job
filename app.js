@@ -52,20 +52,22 @@ const task = cron.schedule('0 * * * * *', async () => {
   const currentJobs = tasks.filter(task => {
     const { run_at } = task
     const bits = run_at.split(':') // split 16:30 into ['16','30']
-    const now = DateTime.local().setZone('Australia/Sydney')
+    const now = DateTime.local().setZone('Australia/Sydney').toISO()
+
+    console.log('now', now)
 
     const taskScheduledTime = DateTime.local(
-      parseInt(now.year),
-      parseInt(now.month),
-      parseInt(now.day),
+      parseInt(DateTime.local().setZone('Australia/Sydney').year),
+      parseInt(DateTime.local().setZone('Australia/Sydney').month),
+      parseInt(DateTime.local().setZone('Australia/Sydney').day),
       parseInt(bits[0]),
       parseInt(bits[1])
     )
 
-    console.log('check time', taskScheduledTime.toISO(), now.toISO())
-    console.log(now.setZone('Australia/Sydney').diff(taskScheduledTime, 'minutes').toObject())
+    console.log('check time', taskScheduledTime.toISO(), now)
+    console.log(DateTime.fromISO(now).diff(taskScheduledTime, 'minutes').toObject())
     // if scheduled time has passed
-    if (now.setZone('Australia/Sydney') >= taskScheduledTime) {
+    if (DateTime.fromISO(now) >= taskScheduledTime) {
       return task
     }
   })
