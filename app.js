@@ -65,9 +65,9 @@ const task = cron.schedule('0 * * * * *', async () => {
     )
 
     console.log('check time', taskScheduledTime.toISO(), now)
-    console.log(DateTime.fromISO(now).diff(taskScheduledTime, 'minutes').toObject())
+    console.log(DateTime.fromISO(now).setZone('Australia/Sydney').diff(taskScheduledTime, 'minutes').toObject())
     // if scheduled time has passed
-    if (DateTime.fromISO(now) >= taskScheduledTime) {
+    if (DateTime.fromISO(now).setZone('Australia/Sydney') >= taskScheduledTime) {
       return task
     }
   })
