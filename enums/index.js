@@ -1,6 +1,6 @@
 const taskType = {
   CALL_STATUS: 'call_status',
-  CALL_HOLD_RESUME: 'hold_resume',
+  HOLD_RESUME: 'hold_resume',
   UNATTENDED_TRANSFER: 'unattended_transfer'
 }
 
@@ -17,15 +17,8 @@ const deviceTypes = {
   'DX-80': 'DX-80'
 }
 
-const deviceRoles = {
-  PRIMARY: 'primary',
-  SECONDARY: 'secondary',
-  THIRD: 'third'
-}
-
 module.exports = {
   taskType,
   userRole,
-  deviceTypes,
-  deviceRoles
+  deviceTypes
 }
