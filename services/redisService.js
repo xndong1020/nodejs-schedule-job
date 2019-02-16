@@ -25,14 +25,14 @@ const getTasks = key => {
   })
 }
 
-const setUserSettings = (userID, settings) => {
-  client.set(userID, settings, redis.print)
-  client.expireat(userID, parseInt(+new Date() / 1000) + 86400)
+const setDeviceList = devices => {
+  client.set('deviceList', devices, redis.print)
+  client.expireat('deviceList', parseInt(+new Date() / 1000) + 86400)
 }
 
-const getUserSettings = userID => {
+const getDeviceList = () => {
   return new Promise((resolve, reject) => {
-    client.get(userID, (error, result) => {
+    client.get('deviceList', (error, result) => {
       if (error) return reject(error)
       return resolve(result)
     })
@@ -42,6 +42,6 @@ const getUserSettings = userID => {
 module.exports = {
   setTasks,
   getTasks,
-  setUserSettings,
-  getUserSettings
+  setDeviceList,
+  getDeviceList
 }

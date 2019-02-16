@@ -1,6 +1,7 @@
 const delay = require('./delay')
 const getBasicAuthHeader = require('./getBasicAuthHeader')
-const getUserSettingsFromRedis = require('./getUserSettingsFromRedis')
+const deviceUrlHelper = require('./deviceUrlHelper')
+const getDeviceListFromRedis = require('./getDeviceListFromRedis')
 const updateTaskCompletedQueue = require('./updateTaskCompletedQueue')
 const xml2jsonConverter = require('./xml2json')
 const { logger } = require('./logger')
@@ -8,8 +9,9 @@ const { logger } = require('./logger')
 module.exports = {
   delay,
   logger,
+  deviceUrlHelper,
   xml2jsonConverter,
   getBasicAuthHeader,
-  getUserSettingsFromRedis,
+  getDeviceListFromRedis,
   updateTaskCompletedQueue
 }

@@ -23,32 +23,44 @@ const jobDispatcher = async tasks => {
 
   switch (task_type) {
     case taskType.CALL_STATUS:
-      await testProcessor(
-        tasks,
-        callStatusTester,
-        saveCallHistoryGetResult,
-        null,
-        true
-      )
+      try {
+        await testProcessor(
+          tasks,
+          callStatusTester,
+          saveCallHistoryGetResult,
+          null,
+          true
+        )
+      } catch (e) {
+        console.error(e)
+      }
       break
     case taskType.CALL_HOLD_RESUME:
-      await testProcessor(
-        tasks,
-        callHoldAndResumeTester,
-        saveCallHoldResumeResult,
-        callHoldResumeReader,
-        false
-      )
+      try {
+        await testProcessor(
+          tasks,
+          callHoldAndResumeTester,
+          saveCallHoldResumeResult,
+          callHoldResumeReader,
+          false
+        )
+      } catch (e) {
+        console.error(e)
+      }
       break
 
     case taskType.UNATTENDED_TRANSFER:
-      await testProcessor(
-        tasks,
-        callUnattendedTransferTester,
-        saveCallUnattendedTransferResult,
-        callUnattendedTransferReader,
-        false
-      )
+      try {
+        await testProcessor(
+          tasks,
+          callUnattendedTransferTester,
+          saveCallUnattendedTransferResult,
+          callUnattendedTransferReader,
+          false
+        )
+      } catch (e) {
+        console.error(e)
+      }
       break
 
     default:

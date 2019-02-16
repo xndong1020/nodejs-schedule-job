@@ -7,6 +7,7 @@ const TaskSchema = new mongoose.Schema(
   {
     userID: String,
     text: String,
+    run_now: Boolean,
     start_date: String,
     end_date: String,
     run_at: String,

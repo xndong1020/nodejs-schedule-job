@@ -112,8 +112,7 @@ const saveCallUnattendedTransferResult = async (data, userID) => {
 
 const getPendingTasksFromDb = async (task_type = '') => {
   let results = []
-  if (!task_type) results = await Task.find({ status: 'pending' })
-  else results = await Task.find({ task_type, status: 'pending' })
+  if (!task_type) { results = await Task.find({ status: 'pending', run_now: false }) } else { results = await Task.find({ task_type, status: 'pending', run_now: false }) }
   return results
 }
 

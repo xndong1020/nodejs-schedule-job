@@ -2,9 +2,12 @@
 
 const axios = require('axios')
 const { payloadFactory } = require('../factories/payloadFactory')
-const { xml2jsonConverter } = require('../utils')
-const { getBasicAuthHeader } = require('../utils')
-const { logger } = require('../utils')
+const {
+  xml2jsonConverter,
+  getBasicAuthHeader,
+  deviceUrlHelper,
+  logger
+} = require('../utils')
 require('dotenv').config()
 
 class CommandBase {
@@ -17,7 +20,9 @@ class MakeCallCommand extends CommandBase {
   async execute (primaryDeviceSettings, secondaryDeviceDetails) {
     try {
       const {
-        deviceUrl,
+        deviceProtocol,
+        deviceIPAddress,
+        devicePortNumber,
         deviceUsername,
         devicePassword
       } = primaryDeviceSettings
@@ -27,7 +32,7 @@ class MakeCallCommand extends CommandBase {
           ? secondaryDeviceDetails.deviceExtNo
           : secondaryDeviceDetails.deviceNumberAddr
       const callResponse = await axios.post(
-        deviceUrl,
+        deviceUrlHelper(deviceProtocol, deviceIPAddress, devicePortNumber),
         payloadFactory('makeCall', secondaryDeviceNo),
         getBasicAuthHeader(deviceUsername, devicePassword)
       )
@@ -47,9 +52,15 @@ class DisconnectCallCommand extends CommandBase {
   }
 
   async execute (primaryDeviceSettings) {
-    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
+    const {
+      deviceProtocol,
+      deviceIPAddress,
+      devicePortNumber,
+      deviceUsername,
+      devicePassword
+    } = primaryDeviceSettings
     const callResponse = await axios.post(
-      deviceUrl,
+      deviceUrlHelper(deviceProtocol, deviceIPAddress, devicePortNumber),
       payloadFactory('disconnectCall', this.callId),
       getBasicAuthHeader(deviceUsername, devicePassword)
     )
@@ -65,9 +76,15 @@ class HoldCallCommand extends CommandBase {
   }
 
   async execute (primaryDeviceSettings) {
-    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
+    const {
+      deviceProtocol,
+      deviceIPAddress,
+      devicePortNumber,
+      deviceUsername,
+      devicePassword
+    } = primaryDeviceSettings
     const callResponse = await axios.post(
-      deviceUrl,
+      deviceUrlHelper(deviceProtocol, deviceIPAddress, devicePortNumber),
       payloadFactory('holdCall', this.callId),
       getBasicAuthHeader(deviceUsername, devicePassword)
     )
@@ -83,9 +100,15 @@ class ResumeCallCommand extends CommandBase {
   }
 
   async execute (primaryDeviceSettings) {
-    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
+    const {
+      deviceProtocol,
+      deviceIPAddress,
+      devicePortNumber,
+      deviceUsername,
+      devicePassword
+    } = primaryDeviceSettings
     const callResponse = await axios.post(
-      deviceUrl,
+      deviceUrlHelper(deviceProtocol, deviceIPAddress, devicePortNumber),
       payloadFactory('resumeCall', this.callId),
       getBasicAuthHeader(deviceUsername, devicePassword)
     )
@@ -108,7 +131,9 @@ class UnattendedTransferCommand extends CommandBase {
   ) {
     try {
       const {
-        deviceUrl,
+        deviceProtocol,
+        deviceIPAddress,
+        devicePortNumber,
         deviceUsername,
         devicePassword
       } = primaryDeviceSettings
@@ -117,7 +142,7 @@ class UnattendedTransferCommand extends CommandBase {
           ? thirdDeviceDetails.deviceExtNo
           : thirdDeviceDetails.deviceNumberAddr
       const callResponse = await axios.post(
-        deviceUrl,
+        deviceUrlHelper(deviceProtocol, deviceIPAddress, devicePortNumber),
         payloadFactory('unattendedTransferCall', {
           callId: this.callId,
           thirdDeviceNo
@@ -135,9 +160,15 @@ class UnattendedTransferCommand extends CommandBase {
 
 class CallHistoryGetCommand extends CommandBase {
   async execute (primaryDeviceSettings) {
-    const { deviceUrl, deviceUsername, devicePassword } = primaryDeviceSettings
+    const {
+      deviceProtocol,
+      deviceIPAddress,
+      devicePortNumber,
+      deviceUsername,
+      devicePassword
+    } = primaryDeviceSettings
     const callResponse = await axios.post(
-      deviceUrl,
+      deviceUrlHelper(deviceProtocol, deviceIPAddress, devicePortNumber),
       payloadFactory('callHistoryGet', null),
       getBasicAuthHeader(deviceUsername, devicePassword)
     )

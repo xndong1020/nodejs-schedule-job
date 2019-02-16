@@ -5,6 +5,7 @@ const io = require('socket.io-client')
 const { getTodayScheduledTask } = require('./services/mongodbService')
 const { updateQueue, readQueue } = require('./managers/queueManager')
 const { getCurrentJob } = require('./managers/taskManager')
+const { getDeviceListFromRedis } = require('./utils')
 const jobDispatcher = require('./dispatcher')
 
 const socket = io(process.env.SOCKETIO_SERVER_URL)
@@ -14,19 +15,26 @@ require('./db')
 
 socket.on('connect', () => {
   console.log('socket connected')
+  socket.emit('test', { data: 'aaa' })
 })
 socket.on('disconnect', () => {
   console.log('socket disconnect')
 })
 
-socket.on('newTask', async () => {
-  console.log('newTask created')
-  await shouldProcessNextJob()
+socket.on('newTask', async task => {
+  if (!task.run_now) {
+    await shouldProcessNextJob()
+  } else {
+    await jobDispatcher([task])
+  }
 })
 
-socket.on('taskUpdated', async () => {
-  console.log('Task taskUpdated')
-  await shouldProcessNextJob()
+socket.on('taskUpdated', async task => {
+  if (!task.run_now) {
+    await shouldProcessNextJob()
+  } else {
+    await jobDispatcher([task])
+  }
 })
 
 socket.on('taskDeleted', async () => {
@@ -34,6 +42,14 @@ socket.on('taskDeleted', async () => {
   await shouldProcessNextJob()
 })
 
+socket.on('deviceListUpdated', async () => {
+  console.log('Device List Updated')
+  await getDeviceListFromRedis()
+})
+
+// This function will read scheduled task from db, check the 'task_processing' queue
+// If no task is in 'task_processing' queue, then update 'tasks_pending' queue from db
+// Otherwise dequeue the 'task_processing' from 'tasks_pending' queue
 const shouldProcessNextJob = async () => {
   const tasks = await getTodayScheduledTask() // receiving updated tasks from server
   const taskInProcess = await readQueue('task_processing')
@@ -57,7 +73,6 @@ const task = cron.schedule('0 * * * * *', async () => {
   console.log('should continue', next)
   if (next) {
     const currentJob = await getCurrentJob()
-
     if (currentJob && currentJob.length === 1) {
       await jobDispatcher(currentJob)
     } else {

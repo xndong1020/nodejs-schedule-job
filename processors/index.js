@@ -4,7 +4,7 @@ const updateTaskCompletedQueue = require('../utils/updateTaskCompletedQueue')
 const { logger } = require('../utils')
 const { config } = require('../config')
 const { setTasks } = require('../services/redisService')
-const { getUserSettingsFromRedis } = require('../utils')
+const { getDeviceListFromRedis } = require('../utils')
 
 // for socket io
 const io = require('socket.io-client')
@@ -31,9 +31,8 @@ const testProcessor = async (
   } = current_task
 
   // read user settings
-  if (!userID) return
-  const userDeviceSettings = await getUserSettingsFromRedis(userID)
-  const { devices } = userDeviceSettings
+  if (!userID) throw new Error('Unauthorized UserID')
+  const devices = (await getDeviceListFromRedis(userID)) || []
 
   const primaryDeviceDetails = devices.find(
     device => device.deviceName === primary_device
