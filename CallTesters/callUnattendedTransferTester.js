@@ -39,8 +39,8 @@ const callUnattendedTransferTester = async (
     invoker
   )
 
-  // delay for a few seconds to ensure the call quality
-  await delay(5000)
+  // delay for a few seconds to ensure the transferred call has been processed before disconnection
+  await delay(10000)
 
   // try to disconnect call
   await disconnectCallTestSubModule(secondaryDeviceSettings, callId, invoker)
