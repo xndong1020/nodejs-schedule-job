@@ -17,6 +17,7 @@ const CallHoldResumeResultSchema = new mongoose.Schema({
 const CallHoldResumeResultReportSchema = new mongoose.Schema({
   data: Array,
   userID: String,
+  taskId: String,
   date: {
     type: String,
     default: DateTime.local().toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)

@@ -3,6 +3,7 @@
 const cron = require('node-cron')
 const io = require('socket.io-client')
 const { getTodayScheduledTask } = require('./services/mongodbService')
+const { clearDeviceList } = require('./services/redisService.js')
 const { updateQueue, readQueue } = require('./managers/queueManager')
 const { getCurrentJob } = require('./managers/taskManager')
 const { getDeviceListFromRedis } = require('./utils')
@@ -44,6 +45,7 @@ socket.on('taskDeleted', async () => {
 
 socket.on('deviceListUpdated', async () => {
   console.log('Device List Updated')
+  await clearDeviceList()
   await getDeviceListFromRedis()
 })
 

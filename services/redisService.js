@@ -39,9 +39,19 @@ const getDeviceList = () => {
   })
 }
 
+const clearDeviceList = () => {
+  return new Promise((resolve, reject) => {
+    client.del('deviceList', (error, result) => {
+      if (error) return reject(error)
+      return resolve(result)
+    })
+  })
+}
+
 module.exports = {
   setTasks,
   getTasks,
   setDeviceList,
-  getDeviceList
+  getDeviceList,
+  clearDeviceList
 }

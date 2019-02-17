@@ -1,16 +1,14 @@
-const {
-  Invoker,
-  MakeCallCommand,
-  CallHistoryGetCommand,
-  DisconnectCallCommand,
-  HoldCallCommand,
-  ResumeCallCommand
-} = require('../commands/CommandBase')
-const { callHistoryReader } = require('../readers')
+const { Invoker } = require('../commands/CommandBase')
 const { saveCallHistoryGetResult } = require('../services/mongodbService')
 const { taskType } = require('../enums')
 const { delay } = require('../utils')
-const { liveTestingMessageEmitter } = require('../services/socketioService')
+const {
+  callStatusTestSubModule,
+  callHoldTestSubModule,
+  callResumeTestSubModule,
+  disconnectCallTestSubModule,
+  callHistoryGetterSubModule
+} = require('../CallTesterSubModules')
 
 const callHoldAndResumeTester = async (
   primaryDeviceSettings,
@@ -23,98 +21,35 @@ const callHoldAndResumeTester = async (
     thirdDeviceSettings
   )
 
-  liveTestingMessageEmitter(
-    `Start testing call hold and resume from ${
-      primaryDeviceSettings.deviceName
-    }.`
-  )
-
+  // delay for a few seconds to ensure previous call was finished
   await delay(5000)
 
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Trying to make call to ${secondaryDeviceSettings.deviceName}.`
+  // start the initial call
+  const callResult = await callStatusTestSubModule(
+    secondaryDeviceSettings,
+    invoker
   )
-
-  // make call to recipient
-  const callResponseJson = await invoker
-    .set_command(new MakeCallCommand())
-    .run_command()
-
-  // delay for a few seconds to ensure the call quality
-  await delay(15000)
-
-  // get call status
-  const callStatus = callResponseJson.Command.DialResult[0].$.status
-
-  if (callStatus !== 'OK') {
-    // notify admin web
-    liveTestingMessageEmitter(
-      `Failed to make call to ${secondaryDeviceSettings.deviceName}`
-    )
-    console.error(callResponseJson.Command.DialResult)
-    return
-  }
-
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Successfully made call to ${secondaryDeviceSettings.deviceName}`
-  )
-
   // get call id
-  const callId = callResponseJson.Command.DialResult[0].CallId[0]
+  const callId = callResult.callId
+  // console.log('callId', callId)
 
-  // notify admin web
-  liveTestingMessageEmitter(`Trying to hold call for callID ${callId}.`)
-
-  const holdResponseJson = await invoker
-    .set_command(new HoldCallCommand(callId))
-    .run_command()
-
-  // notify admin web
-  liveTestingMessageEmitter(`Successfully hold call for callID ${callId}.`)
+  // start testing call hold
+  const holdResponseJson = await callHoldTestSubModule(invoker, callId)
 
   // delay for a few seconds to ensure the call quality
   await delay(5000)
 
-  // notify admin web
-  liveTestingMessageEmitter(`Trying to resume call for callID ${callId}.`)
-
-  const resumeResponseJson = await invoker
-    .set_command(new ResumeCallCommand(callId))
-    .run_command()
-
-  // notify admin web
-  liveTestingMessageEmitter(`Successfully resume call for callID ${callId}.`)
+  // start testing call resume
+  const resumeResponseJson = await callResumeTestSubModule(callId, invoker)
 
   // delay for a few seconds to ensure the call quality
   await delay(5000)
 
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Trying to disconnect call to ${
-      secondaryDeviceSettings.deviceName
-    }. CallId is ${callId}`
-  )
+  // try to disconnect call
+  await disconnectCallTestSubModule(secondaryDeviceSettings, callId, invoker)
 
-  // disconnect previous call
-  await invoker.set_command(new DisconnectCallCommand(callId)).run_command()
-
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Successfully disconnected call to ${
-      secondaryDeviceSettings.deviceName
-    }. Now preparing data for callId ${callId}`
-  )
-
-  // get all call history
-  const callHistoryGetResponse = await invoker
-    .set_command(new CallHistoryGetCommand())
-    .run_command()
-
-  // find call history for previous call
-  const targetCallHistoryGetResult = callHistoryReader(
-    callHistoryGetResponse,
+  const targetCallHistoryGetResult = await callHistoryGetterSubModule(
+    invoker,
     callId
   )
 

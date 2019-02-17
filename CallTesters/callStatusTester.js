@@ -1,13 +1,11 @@
+const { Invoker } = require('../commands/CommandBase')
 const {
-  Invoker,
-  MakeCallCommand,
-  DisconnectCallCommand,
-  CallHistoryGetCommand
-} = require('../commands/CommandBase')
-const { callHistoryReader } = require('../readers')
-const { config } = require('../config')
+  callStatusTestSubModule,
+  disconnectCallTestSubModule,
+  callHistoryGetterSubModule
+} = require('../CallTesterSubModules')
+
 const { delay } = require('../utils')
-const { liveTestingMessageEmitter } = require('../services/socketioService')
 
 const callStatusTester = async (
   primaryDeviceSettings,
@@ -20,72 +18,23 @@ const callStatusTester = async (
     thirdDeviceSettings
   )
 
-  console.log('before liveTestingMessageEmitter')
-  liveTestingMessageEmitter(
-    `Start testing call hold and resume from ${
-      primaryDeviceSettings.deviceName
-    }.`
-  )
-  console.log('after liveTestingMessageEmitter')
+  // delay for a few seconds to ensure previous call was finished
   await delay(3000)
 
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Trying to make call to ${secondaryDeviceSettings.deviceName}.`
-  )
-
-  // make call to recipient
-  const callResponseJson = await invoker
-    .set_command(new MakeCallCommand())
-    .run_command()
-
-  // delay for a few seconds to ensure the call quality
-  await delay(config.call_wait_time)
-
-  // get call status
-  const callStatus = callResponseJson.Command.DialResult[0].$.status
-
-  if (callStatus !== 'OK') {
-    // notify admin web
-    liveTestingMessageEmitter(
-      `Failed to make call to ${secondaryDeviceSettings.deviceName}.`
-    )
-    console.error(callResponseJson.Command.DialResult)
-    return
-  }
-
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Successfully made call to ${secondaryDeviceSettings.deviceName}`
+  // start the initial call
+  const callResult = await callStatusTestSubModule(
+    secondaryDeviceSettings,
+    invoker
   )
 
   // get call id
-  const callId = callResponseJson.Command.DialResult[0].CallId[0]
+  const callId = callResult.callId
 
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Trying to disconnect call to ${
-      secondaryDeviceSettings.deviceName
-    }. CallId is ${callId}`
-  )
+  // try to disconnect call
+  await disconnectCallTestSubModule(secondaryDeviceSettings, callId, invoker)
 
-  // disconnect previous call
-  await invoker.set_command(new DisconnectCallCommand(callId)).run_command()
-
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Successfully disconnected call to ${
-      secondaryDeviceSettings.deviceName
-    }. Now preparing data for callId ${callId}`
-  )
-  // get all call history
-  const callHistoryGetResponse = await invoker
-    .set_command(new CallHistoryGetCommand())
-    .run_command()
-
-  // find call history for previous call
-  const targetCallHistoryGetResult = callHistoryReader(
-    callHistoryGetResponse,
+  const targetCallHistoryGetResult = await callHistoryGetterSubModule(
+    invoker,
     callId
   )
 

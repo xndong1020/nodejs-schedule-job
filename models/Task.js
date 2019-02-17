@@ -11,6 +11,7 @@ const TaskSchema = new mongoose.Schema(
     start_date: String,
     end_date: String,
     run_at: String,
+    task_id: String,
     task_type: String,
     primary_device: String,
     secondary_device: String,

@@ -16,10 +16,13 @@ const {
   callUnattendedTransferTester
 } = require('./CallTesters')
 const { taskType } = require('./enums')
+const { liveTestingMessageEmitter } = require('./services/socketioService')
 
 const jobDispatcher = async tasks => {
   const current_task = tasks[0]
   const { task_type } = current_task
+
+  liveTestingMessageEmitter(`Start testing task ${task_type}.`)
 
   switch (task_type) {
     case taskType.CALL_STATUS:

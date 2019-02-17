@@ -31,6 +31,7 @@ const CallHistoryGetResultSchema = new mongoose.Schema({
 const CallHistoryGetResultReportSchema = new mongoose.Schema({
   data: Array,
   userID: String,
+  taskId: String,
   type: String,
   associatedReportId: String,
   date: {

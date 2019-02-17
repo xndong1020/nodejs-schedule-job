@@ -1,15 +1,13 @@
-const {
-  Invoker,
-  MakeCallCommand,
-  DisconnectCallCommand,
-  CallHistoryGetCommand,
-  UnattendedTransferCommand
-} = require('../commands/CommandBase')
-const { callHistoryReader } = require('../readers')
+const { Invoker } = require('../commands/CommandBase')
 const { saveCallHistoryGetResult } = require('../services/mongodbService')
 const { taskType } = require('../enums')
 const { delay } = require('../utils')
-const { liveTestingMessageEmitter } = require('../services/socketioService')
+const {
+  callStatusTestSubModule,
+  unattendedTransferTestSubModule,
+  disconnectCallTestSubModule,
+  callHistoryGetterSubModule
+} = require('../CallTesterSubModules')
 
 const callUnattendedTransferTester = async (
   primaryDeviceSettings,
@@ -22,98 +20,33 @@ const callUnattendedTransferTester = async (
     thirdDeviceSettings
   )
 
-  liveTestingMessageEmitter(
-    `Start testing call unattended transfer from ${
-      primaryDeviceSettings.deviceName
-    }.`
-  )
-
+  // delay for a few seconds to ensure previous call was finished
   await delay(5000)
 
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Trying to make call to ${secondaryDeviceSettings.deviceName}.`
+  // start the initial call
+  const callResult = await callStatusTestSubModule(
+    secondaryDeviceSettings,
+    invoker
   )
-
-  // make call to recipient
-  const callResponseJson = await invoker
-    .set_command(new MakeCallCommand())
-    .run_command()
-
-  // delay for a few seconds to ensure the call quality
-  await delay(15000)
-
-  // get call status
-  const callStatus = callResponseJson.Command.DialResult[0].$.status
-
-  if (callStatus !== 'OK') {
-    // notify admin web
-    liveTestingMessageEmitter(
-      `Failed to make call to ${secondaryDeviceSettings.deviceName}.`
-    )
-    console.error(callResponseJson.Command.DialResult)
-    return
-  }
-
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Successfully made call to ${secondaryDeviceSettings.deviceName}`
-  )
-
   // get call id
-  const callId = callResponseJson.Command.DialResult[0].CallId[0]
+  const callId = callResult.callId
 
-  // UnattendedTransfer the call to thirdDevice
-
-  // notify admin web
-  liveTestingMessageEmitter(
-    `${
-      secondaryDeviceSettings.deviceName
-    } successfully transferred callID ${callId} to device ${
-      thirdDeviceSettings.deviceName
-    }.`
-  )
-
-  const unattendedTransferJson = await invoker
-    .set_command(new UnattendedTransferCommand(callId))
-    .run_command()
-
-  // notify admin web
-  liveTestingMessageEmitter(
-    `${
-      secondaryDeviceSettings.deviceName
-    } is trying to transfer callID ${callId} to device ${
-      thirdDeviceSettings.deviceName
-    }.`
+  // try to transfer the call
+  const unattendedTransferJson = await unattendedTransferTestSubModule(
+    secondaryDeviceSettings,
+    callId,
+    thirdDeviceSettings,
+    invoker
   )
 
   // delay for a few seconds to ensure the call quality
   await delay(5000)
 
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Trying to disconnect call to ${
-      thirdDeviceSettings.deviceName
-    }. Now preparing data for callId ${callId}`
-  )
+  // try to disconnect call
+  await disconnectCallTestSubModule(secondaryDeviceSettings, callId, invoker)
 
-  // disconnect previous call
-  await invoker.set_command(new DisconnectCallCommand(callId)).run_command()
-  // notify admin web
-  liveTestingMessageEmitter(
-    `Successfully disconnected call to ${
-      thirdDeviceSettings.deviceName
-    }. Now preparing data for callId ${callId}`
-  )
-
-  // get all call history
-  const callHistoryGetResponse = await invoker
-    .set_command(new CallHistoryGetCommand())
-    .run_command()
-
-  // find call history for previous call
-  const targetCallHistoryGetResult = callHistoryReader(
-    callHistoryGetResponse,
+  const targetCallHistoryGetResult = await callHistoryGetterSubModule(
+    invoker,
     callId
   )
 

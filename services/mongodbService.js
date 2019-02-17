@@ -13,12 +13,14 @@ const { logger } = require('../utils')
 const saveCallHistoryGetResult = async (
   data,
   userID,
+  taskId,
   type = taskType.CALL_STATUS
 ) => {
   try {
     const result = await CallHistoryGetResultReport.create({
       data,
       userID,
+      taskId,
       type
     })
     return result._id
@@ -83,9 +85,9 @@ const organizeCallHistoryForReport = async (callIds, associatedReportId) => {
   })
 }
 
-const saveCallHoldResumeResult = async (data, userID) => {
+const saveCallHoldResumeResult = async (data, userID, taskId) => {
   try {
-    const result = await CallHoldResumeResultReport.create({ data, userID })
+    const result = await CallHoldResumeResultReport.create({ data, userID, taskId })
     const callIds = data.map(item => item.callId)
     if (callIds) organizeCallHistoryForReport(callIds, result._id)
     return result._id
@@ -95,11 +97,12 @@ const saveCallHoldResumeResult = async (data, userID) => {
   }
 }
 
-const saveCallUnattendedTransferResult = async (data, userID) => {
+const saveCallUnattendedTransferResult = async (data, userID, taskId) => {
   try {
     const result = await CallUnattendedTransferResultReport.create({
       data,
-      userID
+      userID,
+      taskId
     })
     const callIds = data.map(item => item.callId)
     if (callIds) organizeCallHistoryForReport(callIds, result._id)
