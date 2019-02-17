@@ -15,6 +15,7 @@ const CallUnattendedTransferResultReportSchema = new mongoose.Schema({
   data: Array,
   userID: String,
   taskId: String,
+  type: String,
   date: {
     type: String,
     default: DateTime.local().toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)

@@ -85,9 +85,19 @@ const organizeCallHistoryForReport = async (callIds, associatedReportId) => {
   })
 }
 
-const saveCallHoldResumeResult = async (data, userID, taskId) => {
+const saveCallHoldResumeResult = async (
+  data,
+  userID,
+  taskId,
+  type = taskType.HOLD_RESUME
+) => {
   try {
-    const result = await CallHoldResumeResultReport.create({ data, userID, taskId })
+    const result = await CallHoldResumeResultReport.create({
+      data,
+      userID,
+      taskId,
+      type
+    })
     const callIds = data.map(item => item.callId)
     if (callIds) organizeCallHistoryForReport(callIds, result._id)
     return result._id
@@ -97,12 +107,18 @@ const saveCallHoldResumeResult = async (data, userID, taskId) => {
   }
 }
 
-const saveCallUnattendedTransferResult = async (data, userID, taskId) => {
+const saveCallUnattendedTransferResult = async (
+  data,
+  userID,
+  taskId,
+  type = taskType.UNATTENDED_TRANSFER
+) => {
   try {
     const result = await CallUnattendedTransferResultReport.create({
       data,
       userID,
-      taskId
+      taskId,
+      type
     })
     const callIds = data.map(item => item.callId)
     if (callIds) organizeCallHistoryForReport(callIds, result._id)
@@ -115,7 +131,11 @@ const saveCallUnattendedTransferResult = async (data, userID, taskId) => {
 
 const getPendingTasksFromDb = async (task_type = '') => {
   let results = []
-  if (!task_type) { results = await Task.find({ status: 'pending', run_now: false }) } else { results = await Task.find({ task_type, status: 'pending', run_now: false }) }
+  if (!task_type) {
+    results = await Task.find({ status: 'pending', run_now: false })
+  } else {
+    results = await Task.find({ task_type, status: 'pending', run_now: false })
+  }
   return results
 }
 
