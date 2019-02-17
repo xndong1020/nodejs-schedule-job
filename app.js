@@ -15,7 +15,6 @@ require('./db')
 
 socket.on('connect', () => {
   console.log('socket connected')
-  socket.emit('test', { data: 'aaa' })
 })
 socket.on('disconnect', () => {
   console.log('socket disconnect')
@@ -30,6 +29,7 @@ socket.on('newTask', async task => {
 })
 
 socket.on('taskUpdated', async task => {
+  // console.info('taskUpdated', task)
   if (!task.run_now) {
     await shouldProcessNextJob()
   } else {

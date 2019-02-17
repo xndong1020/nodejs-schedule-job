@@ -7,9 +7,10 @@ const { setTasks } = require('../services/redisService')
 const { getDeviceListFromRedis } = require('../utils')
 
 // for socket io
+const { liveTestingMessageEmitter } = require('../services/socketioService')
+require('dotenv').config()
 const io = require('socket.io-client')
 const socket = io(process.env.SOCKETIO_SERVER_URL)
-require('dotenv').config()
 
 const testProcessor = async (
   tasks,
@@ -71,10 +72,18 @@ const testProcessor = async (
         taskID: _id,
         error: null
       })
+      // notify admin web
+      liveTestingMessageEmitter(
+        `Task id ${_id} completed successfully. ReportId is ${reportId}. Also please visit <a href="/reports/${task_type}/${reportId}" target="_blank">Report Link</a> for detailed report.`
+      )
     }
   } catch (error) {
     logger.error(`Error happened when testing ${task_type}: `, error)
     socket.emit('taskComplete', { reportId: null, userID, taskID: _id, error })
+    // notify admin web
+    liveTestingMessageEmitter(
+      `Task id ${_id} failed. Error is ${error.message}`
+    )
   }
 }
 

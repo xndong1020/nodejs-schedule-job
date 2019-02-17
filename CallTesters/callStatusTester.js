@@ -7,19 +7,32 @@ const {
 const { callHistoryReader } = require('../readers')
 const { config } = require('../config')
 const { delay } = require('../utils')
+const { liveTestingMessageEmitter } = require('../services/socketioService')
 
 const callStatusTester = async (
   primaryDeviceSettings,
-  secondaryDeviceNo,
-  thirdDeviceNo = ''
+  secondaryDeviceSettings,
+  thirdDeviceSettings = {}
 ) => {
   const invoker = new Invoker(
     primaryDeviceSettings,
-    secondaryDeviceNo,
-    thirdDeviceNo
+    secondaryDeviceSettings,
+    thirdDeviceSettings
   )
 
+  console.log('before liveTestingMessageEmitter')
+  liveTestingMessageEmitter(
+    `Start testing call hold and resume from ${
+      primaryDeviceSettings.deviceName
+    }.`
+  )
+  console.log('after liveTestingMessageEmitter')
   await delay(3000)
+
+  // notify admin web
+  liveTestingMessageEmitter(
+    `Trying to make call to ${secondaryDeviceSettings.deviceName}.`
+  )
 
   // make call to recipient
   const callResponseJson = await invoker
@@ -33,15 +46,38 @@ const callStatusTester = async (
   const callStatus = callResponseJson.Command.DialResult[0].$.status
 
   if (callStatus !== 'OK') {
-    console.log(callResponseJson.Command.DialResult)
+    // notify admin web
+    liveTestingMessageEmitter(
+      `Failed to make call to ${secondaryDeviceSettings.deviceName}.`
+    )
+    console.error(callResponseJson.Command.DialResult)
+    return
   }
+
+  // notify admin web
+  liveTestingMessageEmitter(
+    `Successfully made call to ${secondaryDeviceSettings.deviceName}`
+  )
 
   // get call id
   const callId = callResponseJson.Command.DialResult[0].CallId[0]
 
+  // notify admin web
+  liveTestingMessageEmitter(
+    `Trying to disconnect call to ${
+      secondaryDeviceSettings.deviceName
+    }. CallId is ${callId}`
+  )
+
   // disconnect previous call
   await invoker.set_command(new DisconnectCallCommand(callId)).run_command()
 
+  // notify admin web
+  liveTestingMessageEmitter(
+    `Successfully disconnected call to ${
+      secondaryDeviceSettings.deviceName
+    }. Now preparing data for callId ${callId}`
+  )
   // get all call history
   const callHistoryGetResponse = await invoker
     .set_command(new CallHistoryGetCommand())
@@ -52,6 +88,7 @@ const callStatusTester = async (
     callHistoryGetResponse,
     callId
   )
+
   return targetCallHistoryGetResult
 }
 module.exports = callStatusTester

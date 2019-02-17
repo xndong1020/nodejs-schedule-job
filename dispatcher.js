@@ -35,7 +35,7 @@ const jobDispatcher = async tasks => {
         console.error(e)
       }
       break
-    case taskType.CALL_HOLD_RESUME:
+    case taskType.HOLD_RESUME:
       try {
         await testProcessor(
           tasks,
