@@ -5,6 +5,7 @@ const getDeviceListFromRedis = require('./getDeviceListFromRedis')
 const updateTaskCompletedQueue = require('./updateTaskCompletedQueue')
 const xml2jsonConverter = require('./xml2json')
 const { logger } = require('./logger')
+const { getLocalNowWithTimezone } = require('./time.util')
 
 module.exports = {
   delay,
@@ -13,5 +14,6 @@ module.exports = {
   xml2jsonConverter,
   getBasicAuthHeader,
   getDeviceListFromRedis,
-  updateTaskCompletedQueue
+  updateTaskCompletedQueue,
+  getLocalNowWithTimezone
 }

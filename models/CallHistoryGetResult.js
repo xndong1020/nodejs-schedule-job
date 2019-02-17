@@ -2,7 +2,7 @@
 
 // Require Mongoose
 const mongoose = require('mongoose')
-const { DateTime } = require('luxon')
+const { getLocalNowWithTimezone } = require('../utils')
 
 // Define a schema
 const CallHistoryGetResultSchema = new mongoose.Schema({
@@ -36,7 +36,7 @@ const CallHistoryGetResultReportSchema = new mongoose.Schema({
   associatedReportId: String,
   date: {
     type: String,
-    default: DateTime.local().toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)
+    default: getLocalNowWithTimezone('Australia/Sydney')
   }
 })
 
