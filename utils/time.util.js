@@ -12,7 +12,7 @@ const getLocalNowWithTimezone = (timezone = 'Australia/Sydney') => {
     zone: timezone
   })
 
-  return nowWithTimezone
+  return nowWithTimezone.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)
 }
 
 module.exports = {
