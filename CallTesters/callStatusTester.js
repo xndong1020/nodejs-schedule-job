@@ -19,7 +19,7 @@ const callStatusTester = async (
   )
 
   // delay for a few seconds to ensure previous call was finished
-  await delay(3000)
+  await delay(10000)
 
   // start the initial call
   const callResult = await callStatusTestSubModule(
