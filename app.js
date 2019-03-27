@@ -69,7 +69,7 @@ const shouldProcessNextJob = async () => {
   }
 }
 
-// task check every 2 mins
+// task check every 1 mins
 const task = cron.schedule('0 * * * * *', async () => {
   const next = await shouldProcessNextJob() // check and if any task is in processing
   console.log('should continue', next)
